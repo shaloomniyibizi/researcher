@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  FACULTY
+  ADMIN
+}
+
+// schema.prisma
+model User {
+  id                    String                 @id @default(cuid())
+  name                  String
+  email                 String                 @unique
+  emailVerified         DateTime?
+  password              String
+  role                  Role                   @default(STUDENT)
+  avatar                String?
+  phoneNumber           String?
+  isTwoFactorEnabled    Boolean                @default(false)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  student               Student?
+  faculty               Faculty?
+  Account               Account[]
+  TwoFactorConfirmation TwoFactorConfirmation?
+  Comment               Comment[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        String?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model VerificationToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model PasswordResetToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model TwoFactorToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model TwoFactorConfirmation {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Student {
+  id        String @id @default(cuid())
+  userId    String @unique
+  user      User   @relation(fields: [userId], references: [id])
+  studentId String @unique
+  field     String
+  year      String
+
+  projects Project[]
+}
+
+model Faculty {
+  id         String @id @default(cuid())
+  userId     String @unique
+  user       User   @relation(fields: [userId], references: [id])
+  facultyId  String @unique
+  department String
+
+  supervisedProjects Project[]
+}
+
+model Project {
+  id           String    @id @default(cuid())
+  title        String
+  description  String
+  challenges   String
+  codeLink     String?
+  methodology  String?
+  objective    String?
+  pdf          String?
+  results      String
+  technologies String
+  image        String?
+  studentId    String
+  student      Student   @relation(fields: [studentId], references: [id])
+  facultyId    String?
+  faculty      Faculty?  @relation(fields: [facultyId], references: [id])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  Comment      Comment[]
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  text      String
+  date      DateTime @default(now())
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String
+  project   Project  @relation(fields: [projectId], references: [id])
+  projectId String
+}
