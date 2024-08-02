@@ -1,82 +1,65 @@
-import { ComponentProps } from 'react';
-
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { ProjectData } from '@/lib/constants';
-import { cn } from '@/lib/utils';
-import { formatDistanceToNow } from 'date-fns';
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ExtendedProject } from "@/lib/types/db";
+import { cn, formatTimeToNow } from "@/lib/utils";
+import Link from "next/link";
 
 interface ProjectListCardProps {
-  items: ProjectData[];
+  projects: ExtendedProject[];
 }
 
-export function ProjectListCard({ items }: ProjectListCardProps) {
+export function ProjectListCard({ projects }: ProjectListCardProps) {
   return (
-    <ScrollArea className='h-[calc(100vh-8rem)] xl:col-span-2'>
-      <div className='flex flex-col gap-2 p-4 pt-0'>
-        {items.map((item) => (
-          <button
+    <ScrollArea className="h-[calc(100vh-8rem)] xl:col-span-2">
+      <div className="flex flex-col gap-2 p-4 pt-0">
+        {projects.map((item) => (
+          <Link
+            href={`/dashboard/projects/${item.id}`}
             key={item.id}
             className={cn(
-              'flex flex-col items-start gap-2 bg-card rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent',
-              item.id === '1' && 'bg-muted'
+              "flex flex-col items-start gap-2 rounded-lg border bg-card p-3 text-left text-sm transition-all hover:bg-accent",
+              item.id === "1" && "bg-muted",
             )}
           >
-            <div className='flex w-full flex-col gap-1'>
-              <div className='flex items-center'>
-                <div className='flex items-center gap-2'>
-                  <div className='font-semibold'>{item.title}</div>
-                  {!item.field && (
-                    <span className='flex h-2 w-2 rounded-full bg-blue-600' />
+            <div className="flex w-full flex-col gap-1">
+              <div className="flex items-center">
+                <div className="flex items-center gap-2">
+                  <div className="font-semibold">{item.title}</div>
+                  {!item.student.department && (
+                    <span className="flex h-2 w-2 rounded-full bg-blue-600" />
                   )}
                 </div>
                 <div
                   className={cn(
-                    'ml-auto text-xs',
-                    item.id === '1'
-                      ? 'text-foreground'
-                      : 'text-muted-foreground'
+                    "ml-auto text-xs",
+                    item.id === "1"
+                      ? "text-foreground"
+                      : "text-muted-foreground",
                   )}
                 >
-                  {formatDistanceToNow(new Date(item.date), {
-                    addSuffix: true,
-                  })}
+                  {formatTimeToNow(item.createdAt)}
                 </div>
               </div>
-              <div className='text-xs font-medium'>{item.field}</div>
+              <div className="text-xs font-medium">
+                {item.student.department}
+              </div>
             </div>
-            <div className='line-clamp-2 text-xs text-muted-foreground'>
-              {item.description.substring(0, 300)}
-            </div>
+            <div
+              className={cn("max-w-7xl text-justify text-muted-foreground")}
+              dangerouslySetInnerHTML={{ __html: item.description! }}
+            ></div>
             {item.technologies.length ? (
-              <div className='flex items-center gap-2'>
-                {item.technologies.map((technology, index) => (
-                  <Badge
-                    key={index}
-                    variant={getBadgeVariantFromTectechnology(technology)}
-                  >
+              <div className="flex items-center gap-2">
+                {item.technologies.split(",").map((technology, index) => (
+                  <Badge key={index} variant={"outline"}>
                     {technology}
                   </Badge>
                 ))}
               </div>
             ) : null}
-          </button>
+          </Link>
         ))}
       </div>
     </ScrollArea>
   );
-}
-
-function getBadgeVariantFromTectechnology(
-  technology: string
-): ComponentProps<typeof Badge>['variant'] {
-  if (['ai'].includes(technology.toLowerCase())) {
-    return 'default';
-  }
-
-  if (['personal'].includes(technology.toLowerCase())) {
-    return 'outline';
-  }
-
-  return 'secondary';
 }

@@ -1,5 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,48 +6,48 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
-import { HelpCircle, LogOut, Settings } from 'lucide-react';
-import Link from 'next/link';
-import { LogoutButton } from './LogoutButton';
+} from "@/components/ui/dropdown-menu";
+import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
+import { HelpCircle, LogOut, Settings } from "lucide-react";
+import Link from "next/link";
+import { LogoutButton } from "./LogoutButton";
+import UserAvatar from "./UserAvatar";
 const UserButton = () => {
   const user = useCurrentUser();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant='outline'
-          size='icon'
-          className='overflow-hidden rounded-full'
+          variant="outline"
+          size="icon"
+          className="overflow-hidden rounded-full"
         >
-          <Avatar>
-            <AvatarImage src={user?.image!} alt={user?.name!} />
-            <AvatarFallback>
-              {user
-                ?.name!.split(' ')
-                .map((chunk) => chunk[0])
-                .join('')}
-            </AvatarFallback>
-          </Avatar>
+          <UserAvatar
+            user={{
+              name: user?.name || null,
+              image: user?.image || null,
+            }}
+            className="h-6 w-6"
+          />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align='end'>
+      <DropdownMenuContent align="end">
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className='flex gap-2 items-center'>
-          <Settings className='w-4 h-4' />
-          <Link href={'/dashboard/settings'}>Settings</Link>
+        <DropdownMenuItem className="flex items-center gap-2">
+          <Settings className="h-4 w-4" />
+          <Link href={"/dashboard/settings"}>Settings</Link>
         </DropdownMenuItem>
-        <DropdownMenuItem className='flex gap-2 items-center'>
-          <HelpCircle className='w-4 h-4' />
+        <DropdownMenuItem className="flex items-center gap-2">
+          <HelpCircle className="h-4 w-4" />
           Support
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
           <LogoutButton>
-            <div className='flex gap-2 items-center'>
-              <LogOut className='h-4 w-4 ' />
+            <div className="flex items-center gap-2">
+              <LogOut className="h-4 w-4" />
               Logout
             </div>
           </LogoutButton>

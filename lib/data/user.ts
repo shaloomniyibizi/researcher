@@ -1,4 +1,4 @@
-import db from '../db';
+import db from "../db";
 
 export const getUserByEmail = async (email: string) => {
   try {
@@ -10,6 +10,15 @@ export const getUserByEmail = async (email: string) => {
   }
 };
 
+export const getStudentByUserId = async (id: string) => {
+  try {
+    const user = await db.student.findUnique({ where: { userId: id } });
+
+    return user;
+  } catch {
+    return null;
+  }
+};
 export const getUserById = async (id: string) => {
   try {
     const user = await db.user.findUnique({ where: { id } });

@@ -1,18 +1,18 @@
-'use client';
+"use client";
 
-import { useUploadThing } from '@/lib/uploadthing';
-import { Progress } from '@radix-ui/react-progress';
+import { useUploadThing } from "@/lib/uploadthing";
+import { Progress } from "@radix-ui/react-progress";
 import {
   ImagePlus,
   Loader2,
   MousePointerSquareDashed,
   Upload,
-} from 'lucide-react';
-import Image from 'next/image';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
-import Dropzone, { FileRejection } from 'react-dropzone';
-import { toast } from 'react-toastify';
+} from "lucide-react";
+import Image from "next/image";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, useTransition } from "react";
+import Dropzone, { FileRejection } from "react-dropzone";
+import { toast } from "react-toastify";
 
 export const FileUploader = () => {
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
@@ -20,13 +20,13 @@ export const FileUploader = () => {
   const searchParams = useSearchParams();
   const pathName = usePathname();
   const router = useRouter();
-  const [newUrl, setNewUrl] = useState('');
+  const [newUrl, setNewUrl] = useState("");
 
-  const { startUpload, isUploading } = useUploadThing('imageUploader', {
+  const { startUpload, isUploading } = useUploadThing("pdfUploader", {
     onClientUploadComplete: ([data]) => {
-      const imageURL = data.serverData.imageURL;
+      const pdfURL = data.serverData.pdfURL;
       startTransition(() => {
-        router.push(`${pathName}?url=${imageURL}`);
+        router.push(`${pathName}?url=${pdfURL}`);
       });
     },
     onUploadProgress(p) {
@@ -40,7 +40,7 @@ export const FileUploader = () => {
     setIsDragOver(false);
 
     toast.error(
-      `${file.file.type} type is not supported. Please choose a PNG, JPG, or JPEG image instead.`
+      `${file.file.type} type is not supported. Please choose a PNG, JPG, or JPEG image instead.`,
     );
   };
 
@@ -52,100 +52,100 @@ export const FileUploader = () => {
 
   const [isPending, startTransition] = useTransition();
   useEffect(() => {
-    const url = searchParams.get('url');
+    const url = searchParams.get("url");
     setNewUrl(url!);
   }, [searchParams]);
 
   return (
-    <div className='grid gap-2'>
+    <div className="grid gap-2">
       {newUrl ? (
         <Image
-          alt='Product image'
-          className='aspect-square w-full h-48 rounded-md object-cover'
-          height='300'
+          alt="Product image"
+          className="aspect-square h-48 w-full rounded-md object-cover"
+          height="300"
           src={newUrl}
-          width='300'
+          width="300"
         />
       ) : (
         <Dropzone
           onDropRejected={onDropRejected}
           onDropAccepted={onDropAccepted}
           accept={{
-            'image/png': ['.png'],
-            'image/jpeg': ['.jpeg'],
-            'image/jpg': ['.jpg'],
+            "image/png": [".png"],
+            "image/jpeg": [".jpeg"],
+            "image/jpg": [".jpg"],
           }}
           onDragEnter={() => setIsDragOver(true)}
           onDragLeave={() => setIsDragOver(false)}
         >
           {({ getRootProps, getInputProps }) => (
             <div
-              className='w-full h-48 p-2 text-center flex-1 flex flex-col items-center justify-center rounded-md border border-dashed'
+              className="flex h-48 w-full flex-1 flex-col items-center justify-center rounded-md border border-dashed p-2 text-center"
               {...getRootProps()}
             >
               <input {...getInputProps()} />
               {isDragOver ? (
-                <MousePointerSquareDashed className='h-6 w-6 text-zinc-500 mb-2' />
+                <MousePointerSquareDashed className="mb-2 h-6 w-6 text-zinc-500" />
               ) : isUploading || isPending ? (
-                <Loader2 className='animate-spin h-6 w-6 text-zinc-500 mb-2' />
+                <Loader2 className="mb-2 h-6 w-6 animate-spin text-zinc-500" />
               ) : (
-                <ImagePlus className='h-6 w-6 text-zinc-500 mb-2' />
+                <ImagePlus className="mb-2 h-6 w-6 text-zinc-500" />
               )}
-              <div className='flex flex-col justify-center mb-2 text-sm text-zinc-700'>
+              <div className="mb-2 flex flex-col justify-center text-sm text-zinc-700">
                 {isUploading ? (
-                  <div className='flex flex-col items-center'>
+                  <div className="flex flex-col items-center">
                     <p>Uploading...</p>
                     <Progress
                       value={uploadProgress}
-                      className='mt-2 w-40 h-2 bg-gray-300'
+                      className="mt-2 h-2 w-40 bg-gray-300"
                     />
                   </div>
                 ) : isPending ? (
-                  <div className='flex flex-col items-center'>
+                  <div className="flex flex-col items-center">
                     <p>Redirecting, please wait...</p>
                   </div>
                 ) : isDragOver ? (
                   <p>
-                    <span className='font-semibold'>Drop file</span> to upload
+                    <span className="font-semibold">Drop file</span> to upload
                   </p>
                 ) : (
                   <p>
-                    <span className='font-semibold'>Click to upload</span> or
+                    <span className="font-semibold">Click to upload</span> or
                     drag and drop
                   </p>
                 )}
               </div>
 
               {isPending ? null : (
-                <p className='text-xs text-zinc-500'>PNG, JPG, JPEG</p>
+                <p className="text-xs text-zinc-500">PNG, JPG, JPEG</p>
               )}
             </div>
           )}
         </Dropzone>
       )}
 
-      <div className='grid grid-cols-3 gap-2'>
+      <div className="grid grid-cols-3 gap-2">
         <button>
           <Image
-            alt='Product image'
-            className='aspect-square w-full rounded-md object-cover'
-            height='84'
-            src='/placeholder.svg'
-            width='84'
+            alt="Product image"
+            className="aspect-square w-full rounded-md object-cover"
+            height="84"
+            src="/placeholder.svg"
+            width="84"
           />
         </button>
         <button>
           <Image
-            alt='Product image'
-            className='aspect-square w-full rounded-md object-cover'
-            height='84'
-            src='/placeholder.svg'
-            width='84'
+            alt="Product image"
+            className="aspect-square w-full rounded-md object-cover"
+            height="84"
+            src="/placeholder.svg"
+            width="84"
           />
         </button>
-        <button className='flex aspect-square w-full items-center justify-center rounded-md border border-dashed'>
-          <Upload className='h-4 w-4 text-muted-foreground' />
-          <span className='sr-only'>Upload</span>
+        <button className="flex aspect-square w-full items-center justify-center rounded-md border border-dashed">
+          <Upload className="h-4 w-4 text-muted-foreground" />
+          <span className="sr-only">Upload</span>
         </button>
       </div>
     </div>

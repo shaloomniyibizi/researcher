@@ -1,26 +1,26 @@
-'use server';
+"use server";
 
-import { signIn } from '@/auth';
-import { getUserByEmail } from '@/lib/data/user';
-import { sendTwoFactorTokenEmail, sendVerificationEmail } from '@/lib/emails';
-import { AuthError } from 'next-auth';
-import { DEFAULT_LOGIN_REDIRECT } from '../config/routes';
+import { signIn } from "@/auth";
+import { getUserByEmail } from "@/lib/data/user";
+import { sendTwoFactorTokenEmail, sendVerificationEmail } from "@/lib/emails";
+import { AuthError } from "next-auth";
+import { DEFAULT_LOGIN_REDIRECT } from "../config/routes";
 import {
   getTwoFactorConfirmationByUserId,
   getTwoFactorTokenByEmail,
-} from '../data/token';
-import db from '../db';
-import { generateTwoFactorToken, generateVerificationToken } from '../tokens';
-import { LoginSchema, LoginSchemaType } from '../validations/user';
+} from "../data/token";
+import db from "../db";
+import { generateTwoFactorToken, generateVerificationToken } from "../tokens";
+import { LoginSchema, LoginSchemaType } from "../validations/user";
 
 export const login = async (
   values: LoginSchemaType,
-  callbackUrl?: string | null
+  callbackUrl?: string | null,
 ) => {
   const validatedFields = LoginSchema.safeParse(values);
 
   if (!validatedFields.success) {
-    return { error: 'Invalid fields!' };
+    return { error: "Invalid fields!" };
   }
 
   const { email, password, code } = validatedFields.data;
@@ -28,21 +28,21 @@ export const login = async (
   const existingUser = await getUserByEmail(email);
 
   if (!existingUser || !existingUser.email || !existingUser.password) {
-    return { error: 'Email does not exist!' };
+    return { error: "Email does not exist!" };
   }
 
   if (!existingUser.emailVerified) {
     const verificationToken = await generateVerificationToken(
-      existingUser.email
+      existingUser.email,
     );
 
     await sendVerificationEmail(
       verificationToken.email,
-      verificationToken.token
+      verificationToken.token,
     );
     console.log(verificationToken.token);
 
-    return { success: 'Confirmation email sent!' };
+    return { success: "Confirmation email sent!" };
   }
 
   if (existingUser.isTwoFactorEnabled && existingUser.email) {
@@ -50,17 +50,17 @@ export const login = async (
       const twoFactorToken = await getTwoFactorTokenByEmail(existingUser.email);
 
       if (!twoFactorToken) {
-        return { error: 'Invalid code!' };
+        return { error: "Invalid code!" };
       }
 
       if (twoFactorToken.token !== code) {
-        return { error: 'Invalid code!' };
+        return { error: "Invalid code!" };
       }
 
       const hasExpired = new Date(twoFactorToken.expires) < new Date();
 
       if (hasExpired) {
-        return { error: 'Code expired!' };
+        return { error: "Code expired!" };
       }
 
       await db.twoFactorToken.delete({
@@ -68,7 +68,7 @@ export const login = async (
       });
 
       const existingConfirmation = await getTwoFactorConfirmationByUserId(
-        existingUser.id
+        existingUser.id,
       );
 
       if (existingConfirmation) {
@@ -91,7 +91,7 @@ export const login = async (
   }
 
   try {
-    await signIn('credentials', {
+    await signIn("credentials", {
       email,
       password,
       redirectTo: callbackUrl || DEFAULT_LOGIN_REDIRECT,
@@ -99,10 +99,10 @@ export const login = async (
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
-        case 'CredentialsSignin':
-          return { error: 'Invalid credentials!' };
+        case "CredentialsSignin":
+          return { error: "Invalid credentials!" };
         default:
-          return { error: 'Something went wrong!' };
+          return { error: "Something went wrong!" };
       }
     }
 

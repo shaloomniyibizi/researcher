@@ -3,6 +3,7 @@ import {
   Bot,
   BotMessageSquare,
   Database,
+  Server,
   Settings,
   TextSearch,
   University,
@@ -319,9 +320,14 @@ export const mainSideBarMenu = [
     href: '/dashboard/summarizer',
   },
   {
-    title: 'Repository',
+    title: 'Project',
     icon: <Database className='transition-all group-hover:scale-110' />,
     href: '/dashboard/projects',
+  },
+  {
+    title: 'Repository',
+    icon: <Server className='transition-all group-hover:scale-110' />,
+    href: '/dashboard/projects/repository',
   },
 ];
 export const sideBarMenu = [

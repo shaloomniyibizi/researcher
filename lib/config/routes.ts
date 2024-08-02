@@ -4,10 +4,10 @@
  * @type {string[]}
  */
 export const publicRoutes = [
-  '/',
-  '/projects',
-  '/api/uploadthing',
-  '/new-verification',
+  "/",
+  "/projects",
+  "/api/uploadthing",
+  "/new-verification",
 ];
 
 /**
@@ -16,11 +16,11 @@ export const publicRoutes = [
  * @type {string[]}
  */
 export const authRoutes = [
-  '/login',
-  '/register',
-  '/error',
-  '/reset',
-  '/new-password',
+  "/login",
+  "/register",
+  "/error",
+  "/reset",
+  "/new-password",
 ];
 
 /**
@@ -28,10 +28,10 @@ export const authRoutes = [
  * Routes that start with this prefix are used for API authentication purposes
  * @type {string}
  */
-export const apiAuthPrefix = '/api/auth';
+export const apiAuthPrefix = "/api/auth";
 
 /**
  * The default redirect path after logging in
  * @type {string}
  */
-export const DEFAULT_LOGIN_REDIRECT = '/dashboard';
+export const DEFAULT_LOGIN_REDIRECT = "/onboarding";

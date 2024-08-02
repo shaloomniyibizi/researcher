@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
 import CustomFormField, {
   FormFieldType,
-} from '@/components/shared/CustomFormField';
-import SubmitButton from '@/components/shared/SubmitButton';
+} from "@/components/shared/CustomFormField";
+import SubmitButton from "@/components/shared/SubmitButton";
 import {
   Card,
   CardContent,
@@ -11,16 +11,16 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Form } from '@/components/ui/form';
+} from "@/components/ui/card";
+import { Form } from "@/components/ui/form";
 import {
   ProfileSettingSchema,
   ProfileSettingSchemaType,
-} from '@/lib/validations/user';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { toast } from 'react-toastify';
+} from "@/lib/validations/user";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "react-toastify";
 
 const NotificationSettings = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -28,10 +28,10 @@ const NotificationSettings = () => {
   const form = useForm<ProfileSettingSchemaType>({
     resolver: zodResolver(ProfileSettingSchema),
     defaultValues: {
-      name: '',
-      email: '',
-      phoneNumber: '',
-      avatar: '',
+      name: "",
+      email: "",
+      phoneNumber: "",
+      image: "",
     },
   });
 
@@ -40,7 +40,7 @@ const NotificationSettings = () => {
     setIsLoading(true);
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
-    toast.success('well done ');
+    toast.success("well done ");
     console.log(values);
   }
   return (
@@ -57,35 +57,35 @@ const NotificationSettings = () => {
             <CustomFormField
               fieldType={FormFieldType.INPUT}
               control={form.control}
-              name='avatar'
-              placeholder='avatar'
-              label='Avatar'
+              name="image"
+              placeholder="image"
+              label="Image"
             />
             <CustomFormField
               fieldType={FormFieldType.INPUT}
               control={form.control}
-              name='fullName'
-              placeholder='Enter Full Name'
-              label='Full Name'
+              name="fullName"
+              placeholder="Enter Full Name"
+              label="Full Name"
             />
             <CustomFormField
               fieldType={FormFieldType.INPUT}
               control={form.control}
-              name='email'
-              placeholder='Enter email address'
-              label='Email address'
+              name="email"
+              placeholder="Enter email address"
+              label="Email address"
             />
             <CustomFormField
               fieldType={FormFieldType.PHONE_INPUT}
               control={form.control}
-              name='phoneNumber'
-              placeholder='Enter Phone Number'
-              label='Phone Number'
+              name="phoneNumber"
+              placeholder="Enter Phone Number"
+              label="Phone Number"
             />
           </form>
         </Form>
       </CardContent>
-      <CardFooter className='border-t px-6 py-4'>
+      <CardFooter className="border-t px-6 py-4">
         <SubmitButton isLoading={isLoading}>Save</SubmitButton>
       </CardFooter>
     </Card>

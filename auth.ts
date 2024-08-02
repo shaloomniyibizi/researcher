@@ -1,10 +1,10 @@
-import { getAccountByUserId, getUserById } from '@/lib/data/user';
-import { PrismaAdapter } from '@auth/prisma-adapter';
-import { Role } from '@prisma/client';
-import NextAuth from 'next-auth';
-import authConfig from './lib/config/auth.config';
-import { getTwoFactorConfirmationByUserId } from './lib/data/token';
-import db from './lib/db';
+import { getAccountByUserId, getUserById } from "@/lib/data/user";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import { Role } from "@prisma/client";
+import NextAuth from "next-auth";
+import authConfig from "./lib/config/auth.config";
+import { getTwoFactorConfirmationByUserId } from "./lib/data/token";
+import db from "./lib/db";
 
 export const {
   handlers: { GET, POST },
@@ -13,8 +13,8 @@ export const {
   signOut,
 } = NextAuth({
   pages: {
-    signIn: '/login',
-    error: '/error',
+    signIn: "/login",
+    error: "/error",
   },
   events: {
     async linkAccount({ user }) {
@@ -27,16 +27,16 @@ export const {
   callbacks: {
     async signIn({ user, account }) {
       // Allow OAuth without email verification
-      if (account?.provider !== 'credentials') return true;
+      if (account?.provider !== "credentials") return true;
 
-      const existingUser = await getUserById(user.id as string);
+      const existingUser = await getUserById(user.id!);
 
       // Prevent sign in without email verification
       if (!existingUser?.emailVerified) return false;
 
       if (existingUser.isTwoFactorEnabled) {
         const twoFactorConfirmation = await getTwoFactorConfirmationByUserId(
-          existingUser.id
+          existingUser.id,
         );
 
         if (!twoFactorConfirmation) return false;
@@ -89,6 +89,6 @@ export const {
     },
   },
   adapter: PrismaAdapter(db),
-  session: { strategy: 'jwt' },
+  session: { strategy: "jwt" },
   ...authConfig,
 });

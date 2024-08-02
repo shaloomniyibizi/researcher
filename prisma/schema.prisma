@@ -13,6 +13,16 @@ enum Role {
   ADMIN
 }
 
+enum VoteType {
+  UP
+  DOWN
+}
+
+enum UserSystem {
+  SYSTEM
+  USER
+}
+
 // schema.prisma
 model User {
   id                    String                 @id @default(cuid())
@@ -21,16 +31,21 @@ model User {
   emailVerified         DateTime?
   password              String
   role                  Role                   @default(STUDENT)
-  avatar                String?
+  image                 String?
   phoneNumber           String?
+  onboarded             Boolean                @default(false)
+  bio                   String?
   isTwoFactorEnabled    Boolean                @default(false)
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
   student               Student?
   faculty               Faculty?
   Account               Account[]
-  TwoFactorConfirmation TwoFactorConfirmation?
-  Comment               Comment[]
+  twoFactorConfirmation TwoFactorConfirmation?
+  comment               Comment[]
+  votes                 Vote[]
+  commentVote           CommentVote[]
+  Chats                 Chats[]
 }
 
 model Account {
@@ -85,23 +100,19 @@ model TwoFactorConfirmation {
 }
 
 model Student {
-  id        String @id @default(cuid())
-  userId    String @unique
-  user      User   @relation(fields: [userId], references: [id])
-  studentId String @unique
-  field     String
-  year      String
-
-  projects Project[]
+  id         String    @id @default(cuid())
+  userId     String    @unique
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  department String
+  year       String
+  projects   Project[]
 }
 
 model Faculty {
-  id         String @id @default(cuid())
-  userId     String @unique
-  user       User   @relation(fields: [userId], references: [id])
-  facultyId  String @unique
-  department String
-
+  id                 String    @id @default(cuid())
+  userId             String    @unique
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  department         String
   supervisedProjects Project[]
 }
 
@@ -123,15 +134,73 @@ model Project {
   faculty      Faculty?  @relation(fields: [facultyId], references: [id])
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
-  Comment      Comment[]
+  comments     Comment[]
+  votes        Vote[]
 }
 
 model Comment {
   id        String   @id @default(cuid())
   text      String
-  date      DateTime @default(now())
+  createdAt DateTime @default(now())
   author    User     @relation(fields: [authorId], references: [id])
   authorId  String
-  project   Project  @relation(fields: [projectId], references: [id])
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String
+
+  replyToId String?
+  replyTo   Comment?  @relation("ReplyTo", fields: [replyToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies   Comment[] @relation("ReplyTo")
+
+  votes     CommentVote[]
+  commentId String?
+}
+
+model Vote {
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+  type      VoteType
+
+  @@id([userId, projectId])
+}
+
+model CommentVote {
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  commentId String
+  type      VoteType
+
+  @@id([userId, commentId])
+}
+
+model Chats {
+  id        String     @id @default(cuid())
+  pdfName   String
+  pdfUrl    String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  fileKey   String
+  Messages  Messages[]
+  user      User       @relation(fields: [userId], references: [id])
+  userId    String
+}
+
+model Messages {
+  id        String     @id @default(cuid())
+  chatId    String
+  content   String
+  createdAt DateTime   @default(now())
+  role      UserSystem
+  chat      Chats      @relation(fields: [chatId], references: [id])
+}
+
+model UserSubscriptions {
+  id                     String    @id @default(cuid())
+  userId                 String    @unique
+  stripeCustomerId       String    @unique
+  stripeSubscriptionId   String?   @unique
+  stripePriceId          String?
+  stripeCurrentPeriodEnd DateTime?
 }

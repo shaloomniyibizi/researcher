@@ -1,12 +1,12 @@
-import { Role } from '@prisma/client';
-import { z } from 'zod';
+import { Role } from "@prisma/client";
+import { z } from "zod";
 
 export const LoginSchema = z.object({
   email: z.string().email({
-    message: 'Email is required',
+    message: "Email is required",
   }),
   password: z.string().min(1, {
-    message: 'password is required',
+    message: "password is required",
   }),
   code: z.optional(z.string()),
 });
@@ -29,9 +29,9 @@ export const SettingsSchema = z
       return true;
     },
     {
-      message: 'New password is required!',
-      path: ['newPassword'],
-    }
+      message: "New password is required!",
+      path: ["newPassword"],
+    },
   )
   .refine(
     (data) => {
@@ -42,49 +42,55 @@ export const SettingsSchema = z
       return true;
     },
     {
-      message: 'Password is required!',
-      path: ['password'],
-    }
+      message: "Password is required!",
+      path: ["password"],
+    },
   );
 
 export const NewPasswordSchema = z.object({
   password: z.string().min(6, {
-    message: 'Minimum of 6 characters required',
+    message: "Minimum of 6 characters required",
   }),
 });
 
 export const ResetSchema = z.object({
   email: z.string().email({
-    message: 'Email is required',
+    message: "Email is required",
   }),
 });
 
 export const RegisterSchema = z.object({
   name: z.string().min(3, {
-    message: 'user name is required of atleast 3 character',
+    message: "user name is required of atleast 3 character",
   }),
   email: z.string().email({
-    message: 'Email is required',
+    message: "Email is required",
   }),
   phoneNumber: z.string().optional(),
   password: z.string().min(6, {
-    message: 'minimum of 6 characters required for password',
+    message: "minimum of 6 characters required for password",
   }),
 });
 
 export const ProfileSettingSchema = z.object({
-  avatar: z.string().optional(),
+  image: z.string().optional(),
 
   name: z.string().min(2, {
-    message: 'Username must be at least 2 characters.',
+    message: "Username must be at least 2 characters.",
   }),
   email: z.string().min(2, {
-    message: 'Username must be at least 2 characters.',
+    message: "Username must be at least 2 characters.",
   }),
 
   phoneNumber: z.string().min(2, {
-    message: 'technologies must be at least 2 characters.',
+    message: "technologies must be at least 2 characters.",
   }),
+  bio: z.optional(
+    z
+      .string()
+      .min(3, { message: "Minimum 3 characters." })
+      .max(1000, { message: "Maximum 1000 caracters." }),
+  ),
 });
 
 export const SecuritySettingsSchema = z
@@ -101,9 +107,9 @@ export const SecuritySettingsSchema = z
       return true;
     },
     {
-      message: 'New password is required',
-      path: ['newPassword'],
-    }
+      message: "New password is required",
+      path: ["newPassword"],
+    },
   )
   .refine(
     (data) => {
@@ -113,9 +119,9 @@ export const SecuritySettingsSchema = z
       return true;
     },
     {
-      message: 'Current Password is required',
-      path: ['password'],
-    }
+      message: "Current Password is required",
+      path: ["password"],
+    },
   );
 
 export type LoginSchemaType = z.infer<typeof LoginSchema>;

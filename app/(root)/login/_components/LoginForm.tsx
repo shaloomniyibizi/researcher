@@ -1,11 +1,11 @@
-'use client';
-import Link from 'next/link';
+"use client";
+import Link from "next/link";
 
 import CustomFormField, {
   FormFieldType,
-} from '@/components/shared/CustomFormField';
-import { Social } from '@/components/shared/Social';
-import SubmitButton from '@/components/shared/SubmitButton';
+} from "@/components/shared/CustomFormField";
+import { Social } from "@/components/shared/Social";
+import SubmitButton from "@/components/shared/SubmitButton";
 import {
   Card,
   CardContent,
@@ -13,21 +13,21 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Form } from '@/components/ui/form';
-import { login } from '@/lib/actions/login.actions';
-import { LoginSchema, LoginSchemaType } from '@/lib/validations/user';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useSession } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { toast } from 'react-toastify';
+} from "@/components/ui/card";
+import { Form } from "@/components/ui/form";
+import { login } from "@/lib/actions/login.actions";
+import { LoginSchema, LoginSchemaType } from "@/lib/validations/user";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
+import React from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "react-toastify";
 const LoginForm = () => {
   const router = useRouter();
   const { update } = useSession();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl');
+  const callbackUrl = searchParams.get("callbackUrl");
   const [showTwoFactor, setShowTwoFactor] = React.useState(false);
   const [isPending, startTransition] = React.useTransition();
 
@@ -35,8 +35,8 @@ const LoginForm = () => {
   const form = useForm<LoginSchemaType>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
     },
   });
 
@@ -61,7 +61,7 @@ const LoginForm = () => {
             setShowTwoFactor(true);
           }
         })
-        .catch(() => toast.error('Something went wrong'));
+        .catch(() => toast.error("Something went wrong"));
     });
   }
   return (
@@ -74,43 +74,43 @@ const LoginForm = () => {
               Enter your email below to login to your account
             </CardDescription>
           </CardHeader>
-          <CardContent className='flex flex-col gap-4'>
+          <CardContent className="flex flex-col gap-4">
             <CustomFormField
               fieldType={FormFieldType.INPUT}
               control={form.control}
-              name='email'
-              placeholder='Login email'
-              label='Email'
-              type='email'
+              name="email"
+              placeholder="Login email"
+              label="Email"
+              type="email"
             />
             <CustomFormField
               fieldType={FormFieldType.INPUT}
               control={form.control}
-              name='password'
-              placeholder='Login password'
-              label='Password'
-              type='password'
+              name="password"
+              placeholder="Login password"
+              label="Password"
+              type="password"
             />
-            <SubmitButton isLoading={isPending} className='mt-2'>
+            <SubmitButton isLoading={isPending} className="mt-2">
               Login
             </SubmitButton>
           </CardContent>
-          <CardFooter className='grid gap-4'>
-            <div className='relative'>
-              <div className='absolute inset-0 flex items-center'>
-                <span className='w-full border-t' />
+          <CardFooter className="grid gap-4">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
               </div>
-              <div className='relative flex justify-center text-xs uppercase'>
-                <span className='bg-background px-2 text-muted-foreground'>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
                   Or continue with
                 </span>
               </div>
             </div>
 
             <Social />
-            <div className='text-center text-sm'>
-              Don&apos;t have an account?{' '}
-              <Link href='#' className='underline'>
+            <div className="text-center text-sm">
+              Don&apos;t have an account?{" "}
+              <Link href="#" className="underline">
                 Sign up
               </Link>
             </div>

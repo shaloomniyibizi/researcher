@@ -1,6 +1,12 @@
 -- CreateEnum
 CREATE TYPE "Role" AS ENUM ('STUDENT', 'FACULTY', 'ADMIN');
 
+-- CreateEnum
+CREATE TYPE "VoteType" AS ENUM ('UP', 'DOWN');
+
+-- CreateEnum
+CREATE TYPE "UserSystem" AS ENUM ('SYSTEM', 'USER');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
@@ -9,8 +15,10 @@ CREATE TABLE "User" (
     "emailVerified" TIMESTAMP(3),
     "password" TEXT NOT NULL,
     "role" "Role" NOT NULL DEFAULT 'STUDENT',
-    "avatar" TEXT,
+    "image" TEXT,
     "phoneNumber" TEXT,
+    "onboarded" BOOLEAN NOT NULL DEFAULT false,
+    "bio" TEXT,
     "isTwoFactorEnabled" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -27,7 +35,7 @@ CREATE TABLE "Account" (
     "providerAccountId" TEXT NOT NULL,
     "refresh_token" TEXT,
     "access_token" TEXT,
-    "expires_at" INTEGER,
+    "expires_at" TEXT,
     "token_type" TEXT,
     "scope" TEXT,
     "id_token" TEXT,
@@ -78,9 +86,8 @@ CREATE TABLE "TwoFactorConfirmation" (
 CREATE TABLE "Student" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "studentId" TEXT NOT NULL,
-    "field" TEXT NOT NULL,
-    "year" INTEGER NOT NULL,
+    "department" TEXT NOT NULL,
+    "year" TEXT NOT NULL,
 
     CONSTRAINT "Student_pkey" PRIMARY KEY ("id")
 );
@@ -89,7 +96,6 @@ CREATE TABLE "Student" (
 CREATE TABLE "Faculty" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "facultyId" TEXT NOT NULL,
     "department" TEXT NOT NULL,
 
     CONSTRAINT "Faculty_pkey" PRIMARY KEY ("id")
@@ -114,6 +120,68 @@ CREATE TABLE "Project" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Project_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Comment" (
+    "id" TEXT NOT NULL,
+    "text" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "authorId" TEXT NOT NULL,
+    "projectId" TEXT NOT NULL,
+    "replyToId" TEXT,
+    "commentId" TEXT,
+
+    CONSTRAINT "Comment_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Vote" (
+    "userId" TEXT NOT NULL,
+    "projectId" TEXT NOT NULL,
+    "type" "VoteType" NOT NULL,
+
+    CONSTRAINT "Vote_pkey" PRIMARY KEY ("userId","projectId")
+);
+
+-- CreateTable
+CREATE TABLE "CommentVote" (
+    "userId" TEXT NOT NULL,
+    "commentId" TEXT NOT NULL,
+    "type" "VoteType" NOT NULL,
+
+    CONSTRAINT "CommentVote_pkey" PRIMARY KEY ("userId","commentId")
+);
+
+-- CreateTable
+CREATE TABLE "Chats" (
+    "id" TEXT NOT NULL,
+    "pdfName" TEXT NOT NULL,
+    "pdfUrl" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "userId" TEXT NOT NULL,
+    "fileKey" TEXT NOT NULL,
+
+    CONSTRAINT "Chats_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Messages" (
+    "id" TEXT NOT NULL,
+    "pdfName" TEXT NOT NULL,
+    "pdfUrl" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "role" "UserSystem" NOT NULL,
+
+    CONSTRAINT "Messages_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "_ChatsToMessages" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL
 );
 
 -- CreateIndex
@@ -147,13 +215,13 @@ CREATE UNIQUE INDEX "TwoFactorConfirmation_userId_key" ON "TwoFactorConfirmation
 CREATE UNIQUE INDEX "Student_userId_key" ON "Student"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Student_studentId_key" ON "Student"("studentId");
-
--- CreateIndex
 CREATE UNIQUE INDEX "Faculty_userId_key" ON "Faculty"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Faculty_facultyId_key" ON "Faculty"("facultyId");
+CREATE UNIQUE INDEX "_ChatsToMessages_AB_unique" ON "_ChatsToMessages"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_ChatsToMessages_B_index" ON "_ChatsToMessages"("B");
 
 -- AddForeignKey
 ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -162,13 +230,43 @@ ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId"
 ALTER TABLE "TwoFactorConfirmation" ADD CONSTRAINT "TwoFactorConfirmation_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Student" ADD CONSTRAINT "Student_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Student" ADD CONSTRAINT "Student_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Faculty" ADD CONSTRAINT "Faculty_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Faculty" ADD CONSTRAINT "Faculty_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Project" ADD CONSTRAINT "Project_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "Student"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Project" ADD CONSTRAINT "Project_facultyId_fkey" FOREIGN KEY ("facultyId") REFERENCES "Faculty"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Comment" ADD CONSTRAINT "Comment_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Comment" ADD CONSTRAINT "Comment_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Comment" ADD CONSTRAINT "Comment_replyToId_fkey" FOREIGN KEY ("replyToId") REFERENCES "Comment"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "Vote" ADD CONSTRAINT "Vote_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Vote" ADD CONSTRAINT "Vote_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CommentVote" ADD CONSTRAINT "CommentVote_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CommentVote" ADD CONSTRAINT "CommentVote_commentId_fkey" FOREIGN KEY ("commentId") REFERENCES "Comment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Chats" ADD CONSTRAINT "Chats_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_ChatsToMessages" ADD CONSTRAINT "_ChatsToMessages_A_fkey" FOREIGN KEY ("A") REFERENCES "Chats"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_ChatsToMessages" ADD CONSTRAINT "_ChatsToMessages_B_fkey" FOREIGN KEY ("B") REFERENCES "Messages"("id") ON DELETE CASCADE ON UPDATE CASCADE;

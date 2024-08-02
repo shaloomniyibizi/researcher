@@ -1,5 +1,7 @@
-import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { type ClassValue, clsx } from "clsx";
+import { formatDistanceToNowStrict } from "date-fns";
+import locale from "date-fns/locale/en-US";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -21,10 +23,10 @@ interface BreadcrumbItem {
 }
 
 function generateBreadcrumbItems(pathname: string): BreadcrumbItem[] {
-  const pathSegments = pathname.split('/').filter(Boolean); // Remove empty segments
+  const pathSegments = pathname.split("/").filter(Boolean); // Remove empty segments
   return pathSegments.map((segment, index) => ({
     name: capitalizeFirstLetter(segment), // Optionally capitalize names
-    path: `/${pathSegments.slice(0, index + 1).join('/')}`,
+    path: `/${pathSegments.slice(0, index + 1).join("/")}`,
   }));
 }
 
@@ -37,10 +39,76 @@ export { generateBreadcrumbItems };
 export function generateSlug(title: string) {
   const slug = title
     .toLowerCase() // Convert the title to lowercase
-    .replace(/\s+/g, '-') // Replace spaces with dashes
-    .replace(/[^\w\-]+/g, '') // Remove non-word characters except dashes
-    .replace(/\-\-+/g, '-') // Replace multiple consecutive dashes with a single dash
-    .replace(/^\-+/, '') // Remove dashes from the beginning
-    .replace(/\-+$/, ''); // Remove dashes from the end
+    .replace(/\s+/g, "-") // Replace spaces with dashes
+    .replace(/[^\w\-]+/g, "") // Remove non-word characters except dashes
+    .replace(/\-\-+/g, "-") // Replace multiple consecutive dashes with a single dash
+    .replace(/^\-+/, "") // Remove dashes from the beginning
+    .replace(/\-+$/, ""); // Remove dashes from the end
   return slug;
+}
+
+export function dateToUTCDate(date: Date) {
+  return new Date(
+    Date.UTC(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      date.getHours(),
+      date.getMinutes(),
+      date.getSeconds(),
+      date.getMilliseconds(),
+    ),
+  );
+}
+
+const formatDistanceLocale = {
+  lessThanXSeconds: "just now",
+  xSeconds: "just now",
+  halfAMinute: "just now",
+  lessThanXMinutes: "{{count}}m",
+  xMinutes: "{{count}}m",
+  aboutXHours: "{{count}}h",
+  xHours: "{{count}}h",
+  xDays: "{{count}}d",
+  aboutXWeeks: "{{count}}w",
+  xWeeks: "{{count}}w",
+  aboutXMonths: "{{count}}m",
+  xMonths: "{{count}}m",
+  aboutXYears: "{{count}}y",
+  xYears: "{{count}}y",
+  overXYears: "{{count}}y",
+  almostXYears: "{{count}}y",
+};
+
+function formatDistance(token: string, count: number, options?: any): string {
+  options = options || {};
+
+  const result = formatDistanceLocale[
+    token as keyof typeof formatDistanceLocale
+  ].replace("{{count}}", count.toString());
+
+  if (options.addSuffix) {
+    if (options.comparison > 0) {
+      return "in " + result;
+    } else {
+      if (result === "just now") return result;
+      return result + " ago";
+    }
+  }
+
+  return result;
+}
+export function formatTimeToNow(date: Date): string {
+  return formatDistanceToNowStrict(date, {
+    addSuffix: true,
+    locale: {
+      ...locale,
+      formatDistance,
+    },
+  });
+}
+export function convertToAscii(inputString: string) {
+  // remove non ascii characters
+  const asciiString = inputString.replace(/[^\x00-\x7f]/g, "");
+  return asciiString;
 }
