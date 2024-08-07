@@ -1,11 +1,14 @@
 -- CreateEnum
+CREATE TYPE "ProjectStatus" AS ENUM ('pedding', 'accepted', 'rejected');
+
+-- CreateEnum
 CREATE TYPE "Role" AS ENUM ('STUDENT', 'FACULTY', 'ADMIN');
 
 -- CreateEnum
 CREATE TYPE "VoteType" AS ENUM ('UP', 'DOWN');
 
 -- CreateEnum
-CREATE TYPE "UserSystem" AS ENUM ('SYSTEM', 'USER');
+CREATE TYPE "UserSystem" AS ENUM ('assistant', 'user', 'system', 'function', 'tool');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -114,6 +117,7 @@ CREATE TABLE "Project" (
     "results" TEXT NOT NULL,
     "technologies" TEXT NOT NULL,
     "image" TEXT,
+    "status" "ProjectStatus" NOT NULL DEFAULT 'pedding',
     "studentId" TEXT NOT NULL,
     "facultyId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -158,10 +162,11 @@ CREATE TABLE "Chats" (
     "id" TEXT NOT NULL,
     "pdfName" TEXT NOT NULL,
     "pdfUrl" TEXT NOT NULL,
+    "pdfContent" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "userId" TEXT NOT NULL,
     "fileKey" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
 
     CONSTRAINT "Chats_pkey" PRIMARY KEY ("id")
 );
@@ -169,19 +174,24 @@ CREATE TABLE "Chats" (
 -- CreateTable
 CREATE TABLE "Messages" (
     "id" TEXT NOT NULL,
-    "pdfName" TEXT NOT NULL,
-    "pdfUrl" TEXT NOT NULL,
+    "chatId" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
     "role" "UserSystem" NOT NULL,
 
     CONSTRAINT "Messages_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "_ChatsToMessages" (
-    "A" TEXT NOT NULL,
-    "B" TEXT NOT NULL
+CREATE TABLE "UserSubscriptions" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "stripeCustomerId" TEXT NOT NULL,
+    "stripeSubscriptionId" TEXT,
+    "stripePriceId" TEXT,
+    "stripeCurrentPeriodEnd" TIMESTAMP(3),
+
+    CONSTRAINT "UserSubscriptions_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -218,10 +228,13 @@ CREATE UNIQUE INDEX "Student_userId_key" ON "Student"("userId");
 CREATE UNIQUE INDEX "Faculty_userId_key" ON "Faculty"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "_ChatsToMessages_AB_unique" ON "_ChatsToMessages"("A", "B");
+CREATE UNIQUE INDEX "UserSubscriptions_userId_key" ON "UserSubscriptions"("userId");
 
 -- CreateIndex
-CREATE INDEX "_ChatsToMessages_B_index" ON "_ChatsToMessages"("B");
+CREATE UNIQUE INDEX "UserSubscriptions_stripeCustomerId_key" ON "UserSubscriptions"("stripeCustomerId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserSubscriptions_stripeSubscriptionId_key" ON "UserSubscriptions"("stripeSubscriptionId");
 
 -- AddForeignKey
 ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -266,7 +279,4 @@ ALTER TABLE "CommentVote" ADD CONSTRAINT "CommentVote_commentId_fkey" FOREIGN KE
 ALTER TABLE "Chats" ADD CONSTRAINT "Chats_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_ChatsToMessages" ADD CONSTRAINT "_ChatsToMessages_A_fkey" FOREIGN KEY ("A") REFERENCES "Chats"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_ChatsToMessages" ADD CONSTRAINT "_ChatsToMessages_B_fkey" FOREIGN KEY ("B") REFERENCES "Messages"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Messages" ADD CONSTRAINT "Messages_chatId_fkey" FOREIGN KEY ("chatId") REFERENCES "Chats"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

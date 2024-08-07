@@ -1,5 +1,5 @@
-import AWS from 'aws-sdk';
-import fs from 'fs';
+import AWS from "aws-sdk";
+import fs from "fs";
 
 export async function downloadFromS3(file_key: string) {
   try {
@@ -11,7 +11,7 @@ export async function downloadFromS3(file_key: string) {
       params: {
         Bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME,
       },
-      region: 'us-east-2',
+      region: "us-east-2",
     });
     const params = {
       Bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME!,

@@ -7,6 +7,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ProjectStatus {
+  pedding
+  accepted
+  rejected
+}
+
 enum Role {
   STUDENT
   FACULTY
@@ -19,8 +25,11 @@ enum VoteType {
 }
 
 enum UserSystem {
-  SYSTEM
-  USER
+  assistant
+  user
+  system
+  function
+  tool
 }
 
 // schema.prisma
@@ -117,7 +126,7 @@ model Faculty {
 }
 
 model Project {
-  id           String    @id @default(cuid())
+  id           String        @id @default(cuid())
   title        String
   description  String
   challenges   String
@@ -128,12 +137,13 @@ model Project {
   results      String
   technologies String
   image        String?
+  status       ProjectStatus @default(pedding)
   studentId    String
-  student      Student   @relation(fields: [studentId], references: [id])
+  student      Student       @relation(fields: [studentId], references: [id])
   facultyId    String?
-  faculty      Faculty?  @relation(fields: [facultyId], references: [id])
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  faculty      Faculty?      @relation(fields: [facultyId], references: [id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   comments     Comment[]
   votes        Vote[]
 }
@@ -176,15 +186,16 @@ model CommentVote {
 }
 
 model Chats {
-  id        String     @id @default(cuid())
-  pdfName   String
-  pdfUrl    String
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  fileKey   String
-  Messages  Messages[]
-  user      User       @relation(fields: [userId], references: [id])
-  userId    String
+  id         String     @id @default(cuid())
+  pdfName    String
+  pdfUrl     String
+  pdfContent String?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  fileKey    String
+  Messages   Messages[]
+  user       User       @relation(fields: [userId], references: [id])
+  userId     String
 }
 
 model Messages {

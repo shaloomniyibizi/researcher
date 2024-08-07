@@ -1,5 +1,6 @@
-import { Pinecone } from "@pinecone-database/pinecone";
-import { getEmbeddings } from "./embeddings";
+import { projectIndex } from "./newPinecone";
+import { getEmbeddings } from "./openai";
+import { currentUser } from "./userAuth";
 import { convertToAscii } from "./utils";
 
 export async function getMatchesFromEmbeddings(
@@ -7,14 +8,13 @@ export async function getMatchesFromEmbeddings(
   fileKey: string,
 ) {
   try {
-    const client = new Pinecone({
-      apiKey: process.env.PINECONE_API_KEY!,
-    });
-    const pineconeIndex = await client.index("chatpdf");
-    const namespace = pineconeIndex.namespace(convertToAscii(fileKey));
+    const namespace = projectIndex.namespace(convertToAscii(fileKey));
+    const user = await currentUser();
+    const userId = user?.id!;
     const queryResult = await namespace.query({
-      topK: 5,
       vector: embeddings,
+      topK: 5,
+      filter: { userId },
       includeMetadata: true,
     });
     return queryResult.matches || [];

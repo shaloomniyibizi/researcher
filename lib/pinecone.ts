@@ -3,31 +3,20 @@ import {
   Document,
   RecursiveCharacterTextSplitter,
 } from "@pinecone-database/doc-splitter";
-import { Pinecone } from "@pinecone-database/pinecone";
-import { Vector } from "@pinecone-database/pinecone/dist/pinecone-generated-ts-fetch/data";
+import { Pinecone, PineconeRecord } from "@pinecone-database/pinecone";
 import md5 from "md5";
-import { getEmbeddings } from "./embeddings";
+import "pdf-parse"; // Peer dep
+import { projectIndex } from "./newPinecone";
+import { getEmbeddings } from "./openai";
 import { downloadFromS3 } from "./s3-server";
 
-let pinecone: Pinecone | null = null;
+const apiKey = process.env.PINECONE_API_KEY;
+if (!apiKey) throw Error("PINECONE_API_KEY is not defined");
 
-export const getPineconeClient = async () => {
-  if (!pinecone) {
-    pinecone = new Pinecone({
-      apiKey: process.env.PINECONE_API_KEY!,
-    });
-    // await pinecone.createIndex({
-    //   name: 'chatpdf',
-    //   dimension: 1536,
-    //   spec: {
-    //     serverless: {
-    //       cloud: 'aws',
-    //       region: 'us-east-2',
-    //     },
-    //   },
-    // });
-  }
-  return pinecone;
+export const getPineconeClient = () => {
+  return new Pinecone({
+    apiKey,
+  });
 };
 
 type PDFPage = {
@@ -44,6 +33,8 @@ export async function loadS3IntoPinecone(fileKey: string) {
   if (!fileName) {
     throw new Error("Could not download from s3");
   }
+  console.log("loading pdf into memory" + fileName);
+
   const loader = new PDFLoader(fileName);
   const pages = (await loader.load()) as PDFPage[];
 
@@ -54,18 +45,16 @@ export async function loadS3IntoPinecone(fileKey: string) {
   const vectors = await Promise.all(documents.flat().map(embedDocument));
 
   // 4. Upload to pinecone db
-  const client = await getPineconeClient();
-  const pineconeIndex = client.Index("smartreseach");
   console.log("inserting vector into pinecone");
   // const namespace = convertToAscii(fileKey);
-  vectors.map(
-    async (v) =>
-      await pineconeIndex.upsert([
-        {
-          id: v.id,
-          values: v.values,
-        },
-      ]),
+  vectors.map((v) =>
+    projectIndex.upsert([
+      {
+        id: v.id,
+        values: v.values,
+        metadata: { fileKey },
+      },
+    ]),
   );
 
   return documents[0];
@@ -83,7 +72,7 @@ async function embedDocument(doc: Document) {
         text: doc.metadata.text,
         pageNumber: doc.metadata.pageNumber,
       },
-    } as Vector;
+    } as PineconeRecord;
   } catch (error) {
     console.log("Error embedding document", error);
     throw error;

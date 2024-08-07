@@ -4,10 +4,10 @@ import { redirect } from "next/navigation";
 import DashboardStats from "./_components/DashboardStats";
 import NotificationCard from "./_components/NotificationCard";
 import { ProjectListCard } from "./_components/ProjectListCard";
-import { getProjectDetails } from "./projects/_actions/project.actions";
+import { getAllProjects } from "./projects/_actions/project.actions";
 
 async function page() {
-  const projects = await getProjectDetails();
+  const projects = await getAllProjects();
   const user = await currentUser();
   if (!user) redirect("/login");
   const dbUser = await getUserById(user.id!);

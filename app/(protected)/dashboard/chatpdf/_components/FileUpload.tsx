@@ -21,6 +21,8 @@ const FileUpload = () => {
       file_key: string;
       file_name: string;
     }) => {
+      console.log(file_key);
+      console.log(file_name);
       const res = await axios.post("/api/create-chat", { file_key, file_name });
 
       return res.data;
@@ -41,7 +43,6 @@ const FileUpload = () => {
 
       try {
         setIsUploading(true);
-        // uploadId = toast.loading('Please wait while uploaging image...');
         const data = await uploadToS3(file);
         if (!data?.file_key || !data.file_name) {
           toast.error("Samething went wrong");
@@ -52,27 +53,6 @@ const FileUpload = () => {
             toast.success("chat created Successfully");
 
             router.push(`/dashboard/chatpdf/${chat_id}`);
-            // if (data.message) {
-            //   toast.update(uploadId, {
-            //     render: 'Successfully uplaoded',
-            //     type: 'success',
-            //     autoClose: 5000,
-            //     hideProgressBar: false,
-            //     closeOnClick: true,
-            //     pauseOnHover: true,
-            //     isLoading: false,
-            //   });
-            // } else {
-            //   toast.update(uploadId, {
-            //     render: 'Fail to upload',
-            //     type: 'error',
-            //     autoClose: 5000,
-            //     hideProgressBar: false,
-            //     closeOnClick: true,
-            //     pauseOnHover: true,
-            //     isLoading: false,
-            //   });
-            // }
           },
           onError: (error) => {
             toast.error("error creating chat");

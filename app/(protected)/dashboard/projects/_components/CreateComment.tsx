@@ -1,7 +1,7 @@
 "use client";
 
-import SubmitButton from "@/components/shared/SubmitButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -44,11 +44,7 @@ const CreateComment: FC<CreateCommentProps> = ({
     mutationFn: addComment,
     onSuccess: async () => {
       router.refresh();
-      toast.success("Transaction Deleted successfuly");
-
-      // queryClient.invalidateQueries({
-      //   queryKey: ["transactions"],
-      // });
+      toast.success("Your comment saved successfuly");
     },
     onError: (error) => {
       toast.success("Error while creating comment");
@@ -71,22 +67,22 @@ const CreateComment: FC<CreateCommentProps> = ({
     comment(values);
   }
   return (
-    <Card className="mt-8">
-      <div className="flex">
-        <Avatar className="my-6 ml-6 border-border">
-          <AvatarImage src="/images/PassPort.jpg" />
-          <AvatarFallback>SN</AvatarFallback>
-        </Avatar>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <Card className="mt-8">
+          <div className="flex">
+            <Avatar className="my-6 ml-6 border-border">
+              <AvatarImage src="/images/PassPort.jpg" />
+              <AvatarFallback>SN</AvatarFallback>
+            </Avatar>
 
-        <div className="flex-1">
-          <CardHeader>
-            <CardTitle>Comments and Feedback</CardTitle>
-            <CardDescription className="flex items-center gap-8">
-              Comments and Feedback
-            </CardDescription>
-          </CardHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
+            <div className="flex-1">
+              <CardHeader>
+                <CardTitle>Comments and Feedback</CardTitle>
+                <CardDescription className="flex items-center gap-8">
+                  Comments and Feedback
+                </CardDescription>
+              </CardHeader>
               <CardContent>
                 <FormField
                   control={form.control}
@@ -102,15 +98,15 @@ const CreateComment: FC<CreateCommentProps> = ({
                 />
               </CardContent>
               <CardFooter className="flex items-center justify-end">
-                <SubmitButton isLoading={isPending} className="w-fit">
+                <Button type="submit" isLoading={isPending} className="w-fit">
                   Post Review
-                </SubmitButton>
+                </Button>
               </CardFooter>
-            </form>
-          </Form>
-        </div>
-      </div>
-    </Card>
+            </div>
+          </div>
+        </Card>
+      </form>
+    </Form>
   );
 };
 

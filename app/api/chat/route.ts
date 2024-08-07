@@ -1,78 +1,87 @@
 import db from "@/lib/db";
-import { Message, OpenAIStream, StreamingTextResponse } from "ai";
+import { pdfIndex } from "@/lib/newPinecone";
+import openai, { getEmbeddings } from "@/lib/openai";
+import { currentUser } from "@/lib/userAuth";
+import { OpenAIStream, StreamingTextResponse } from "ai";
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import { ChatCompletionMessage } from "openai/resources/index.mjs";
 
 export async function POST(req: Request) {
   try {
-    const { messages, id } = await req.json();
-    const _chats = await db.chats.findUnique({
-      where: { id: id },
+    const body = await req.json();
+    const messages: ChatCompletionMessage[] = body.messages;
+    const chatId = body.id;
+    const _chats = await db.chats.findFirst({
+      where: {
+        id: chatId,
+      },
     });
     if (!_chats) {
       return NextResponse.json({ error: "chat not found" }, { status: 404 });
     }
-    // const fileKey = _chats.fileKey;
-    // const lastMessage = messages[messages.length - 1];
-    // const context = await getContext(messages, fileKey);
-    const prompt = [
-      {
-        role: "system",
-        content: `AI assistant is a brand new, powerful, human-like artificial intelligence.
-  The traits of AI include expert knowledge, helpfulness, cleverness, and articulateness.
-  AI is a well-behaved and well-mannered individual.
-  AI is always friendly, kind, and inspiring, and he is eager to provide vivid and thoughtful responses to the user.
-  AI has the sum of all knowledge in their brain, and is able to accurately answer nearly any question about any topic in conversation.
-  AI assistant is a big fan of Pinecone and Vercel.
-  START CONTEXT BLOCK
+    const lastMessage = messages[messages.length - 1];
+    const messagesTruncated = messages.slice(-6);
 
-  END OF CONTEXT BLOCK
-  AI assistant will take into account any CONTEXT BLOCK that is provided in a conversation.
-  If the context does not provide the answer to question, the AI assistant will say, "I'm sorry, but I don't know the answer to that question".
-  AI assistant will not apologize for previous responses, but instead will indicated new information was gained.
-  AI assistant will not invent anything that is not drawn directly from the context.
-  `,
+    const embedding = await getEmbeddings(
+      messagesTruncated.map((message) => message.content).join("\n"),
+    );
+    const user = await currentUser();
+    const userId = user?.id!;
+    const vectorQueryResponse = await pdfIndex.query({
+      vector: embedding,
+      topK: 4,
+      filter: { userId },
+    });
+
+    const relativeChats = await db.chats.findMany({
+      where: {
+        id: {
+          in: vectorQueryResponse.matches.map((match) => match.id),
+        },
       },
-    ];
+    });
+    console.log("Relavante project found:", relativeChats);
+    const systemMessage: ChatCompletionMessage = {
+      role: "assistant",
+      content:
+        "You are an assistant for question-answering tasks." +
+        "Use the following pieces of retrieved context to answer ," +
+        "the question. If you don't know the answer, say that you ," +
+        "don't know. Use three sentences maximum and keep the ," +
+        "answer concise." +
+        "The relavante context for this query are:\n" +
+        relativeChats.map((chat) => `Content: ${chat.pdfContent}`).join("\n\n"),
+    };
     // Ask OpenAI for a streaming chat completion given the prompt
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       stream: true,
-      messages: [
-        ...prompt,
-        ...messages.filter((message: Message) => message.role === "user"),
-      ],
+      messages: [systemMessage, ...messagesTruncated],
     });
     // Convert the response into a friendly text-stream
-    const stream = OpenAIStream(
-      response,
-      // , {
-      // onStart: async () => {
-      //   //save user message into db
-      //   await db.messages.create({
-      //     data: {
-      //       chatId: id,
-      //       content: messages,
-      //       role: "USER",
-      //     },
-      //   });
-      // },
-      // onCompletion: async (completion) => {
-      //   // save AI message into db
-      //   await db.messages.create({
-      //     data: {
-      //       chatId: id,
-      //       content: completion,
-      //       role: "SYSTEM",
-      //     },
-      //   });
-      // },
-      // }
-    );
+    const stream = OpenAIStream(response, {
+      onStart: async () => {
+        // save user message into db
+        await db.messages.create({
+          data: {
+            content:
+              lastMessage.role !== "assistant" ? lastMessage.content! : "",
+            role: "USER",
+            chatId: _chats.id,
+          },
+        });
+      },
+      onCompletion: async (completion) => {
+        // save ai message into db
+        await db.messages.create({
+          data: {
+            content: completion,
+            role: "SYSTEM",
+            chatId: _chats.id,
+          },
+        });
+      },
+    });
     // Respond with the stream
     return new StreamingTextResponse(stream);
   } catch (e) {

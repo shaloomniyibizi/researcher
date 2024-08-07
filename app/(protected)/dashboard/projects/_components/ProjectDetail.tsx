@@ -166,7 +166,7 @@ const ProjectDetail = ({ project }: ProjectProps) => {
             </TabsList>
             <TabsContent value="reviews">
               <ScrollArea className="h-[80vh] whitespace-nowrap rounded-md border p-4">
-                <CreateComment projectId={project.id} />
+                <CreateComment projectId={project.id} authorId={user?.id!} />
 
                 <div className="mt-4 flex flex-col gap-y-6">
                   {project.comments

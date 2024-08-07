@@ -2,8 +2,11 @@
 
 import { getProjectByTitle } from "@/lib/data/project";
 import db from "@/lib/db";
+import { projectIndex } from "@/lib/newPinecone";
+import { getEmbeddings } from "@/lib/openai";
 import { currentUser } from "@/lib/userAuth";
 import { ProjectSchema, ProjectSchemaType } from "@/lib/validations/project";
+import { redirect } from "next/navigation";
 
 export const addProject = async (values: ProjectSchemaType) => {
   const validatedFields = ProjectSchema.safeParse(values);
@@ -13,6 +16,8 @@ export const addProject = async (values: ProjectSchemaType) => {
   }
 
   const user = await currentUser();
+
+  if (!user) return { error: "Unauthorized to do this action !" };
 
   const {
     challenges,
@@ -39,7 +44,7 @@ export const addProject = async (values: ProjectSchemaType) => {
 
   if (!std) return { error: "You are not allowed to add project" };
 
-  await db.project.create({
+  const project = await db.project.create({
     data: {
       title,
       description,
@@ -55,10 +60,44 @@ export const addProject = async (values: ProjectSchemaType) => {
     },
   });
 
+  if (!project) return { error: "Fail to add New project !" };
   return { success: "New project added successfully!" };
 };
-export const getProjectDetails = async () => {
+
+export const getAllProjects = async () => {
   const projects = await db.project.findMany({
+    include: {
+      comments: {
+        include: {
+          votes: true,
+          author: true,
+          replies: {
+            include: {
+              votes: true,
+              author: true,
+            },
+          },
+        },
+      },
+      student: {
+        include: {
+          user: true,
+        },
+      },
+    },
+  });
+
+  return projects;
+};
+export type GetAllProjectsType = Awaited<ReturnType<typeof getAllProjects>>;
+export const getAllProjectsByDate = async (from: Date, to: Date) => {
+  const projects = await db.project.findMany({
+    where: {
+      createdAt: {
+        gte: from,
+        lte: to,
+      },
+    },
     include: {
       comments: {
         include: {
@@ -110,3 +149,106 @@ export const getProjectById = async (id: string) => {
 
   return project;
 };
+
+export async function DeleteProject(id: string) {
+  const user = await currentUser();
+
+  if (!user) redirect("/login");
+
+  const project = await db.project.findUnique({
+    where: {
+      id,
+    },
+  });
+
+  if (!project) throw new Error("Bad request");
+
+  const delproject = await db.$transaction(async (txt) => {
+    //Delete project from db
+    const delproject = await txt.project.delete({
+      where: {
+        id,
+      },
+    });
+
+    //Delete project from pinecone
+    await projectIndex.deleteOne(id);
+
+    return delproject;
+  });
+  if (!delproject) return { error: "Fail to delete project !" };
+  return { success: "Project deleted successfully!" };
+}
+export async function AcceptProject(id: string) {
+  const user = await currentUser();
+
+  if (!user) redirect("/login");
+
+  const project = await db.project.findUnique({
+    where: {
+      id,
+    },
+  });
+
+  if (!project) return { error: "Bad request" };
+
+  const embedding = await getEmbeddingsForProject(
+    project.title,
+    project.description,
+  );
+  //Accept project from db
+  const acceptproject = await db.$transaction(async (txt) => {
+    const acceptproject = await txt.project.update({
+      where: {
+        id,
+      },
+      data: {
+        status: "accepted",
+      },
+    });
+
+    await projectIndex.upsert([
+      {
+        id: acceptproject.id,
+        values: embedding,
+        metadata: { userId: user?.id! },
+      },
+    ]);
+
+    return acceptproject;
+  });
+
+  if (!acceptproject) return { error: "Fail to accept project !" };
+  return { success: "Project accepted successfully!" };
+}
+export async function RejectProject(id: string) {
+  const user = await currentUser();
+
+  if (!user) redirect("/login");
+
+  const project = await db.project.findUnique({
+    where: {
+      id,
+    },
+  });
+
+  if (!project) throw new Error("Bad request");
+  //Delete project from db
+  const rejectproject = await db.project.update({
+    where: {
+      id,
+    },
+    data: {
+      status: "rejected",
+    },
+  });
+  if (!rejectproject) return { error: "Fail to delete project !" };
+  return { success: "Project deleted successfully!" };
+}
+
+async function getEmbeddingsForProject(
+  title: string,
+  description: string | undefined,
+) {
+  return getEmbeddings(title + "\n\n" + description ?? "");
+}

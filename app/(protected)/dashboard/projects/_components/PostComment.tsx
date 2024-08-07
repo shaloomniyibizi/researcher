@@ -56,7 +56,7 @@ const PostComment: FC<PostCommentProps> = ({
         <UserAvatar
           user={{
             name: comment.author.name || null,
-            image: comment.author.avatar || null,
+            image: comment.author.image || null,
           }}
           className="h-6 w-6"
         />
