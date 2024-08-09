@@ -1,14 +1,14 @@
 "use server";
 
 import { signIn } from "@/auth";
-import { getUserByEmail } from "@/lib/data/user";
+import { getUserByEmail } from "@/lib/data/user.actions";
 import { sendTwoFactorTokenEmail, sendVerificationEmail } from "@/lib/emails";
 import { AuthError } from "next-auth";
 import { DEFAULT_LOGIN_REDIRECT } from "../config/routes";
 import {
   getTwoFactorConfirmationByUserId,
   getTwoFactorTokenByEmail,
-} from "../data/token";
+} from "../data/token.actions";
 import db from "../db";
 import { generateTwoFactorToken, generateVerificationToken } from "../tokens";
 import { LoginSchema, LoginSchemaType } from "../validations/user";

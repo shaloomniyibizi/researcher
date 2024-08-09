@@ -1,39 +1,39 @@
-'use server';
+"use server";
 
-import { getUserByEmail, getUserById } from '@/lib/data/user';
-import { sendVerificationEmail } from '@/lib/emails';
-import { currentUser } from '@/lib/userAuth';
-import db from '../../../../../lib/db';
-import { generateVerificationToken } from '../../../../../lib/tokens';
-import { ProfileSettingSchemaType } from '../../../../../lib/validations/user';
+import { getUserByEmail, getUserById } from "@/lib/data/user.actions";
+import { sendVerificationEmail } from "@/lib/emails";
+import { currentUser } from "@/lib/userAuth";
+import db from "../../../../../lib/db";
+import { generateVerificationToken } from "../../../../../lib/tokens";
+import { ProfileSettingSchemaType } from "../../../../../lib/validations/user";
 
 export const ProfileSetting = async (values: ProfileSettingSchemaType) => {
   const user = await currentUser();
 
   if (!user) {
-    return { error: 'Unauthorized' };
+    return { error: "Unauthorized" };
   }
 
   const dbUser = await getUserById(user.id as string);
 
   if (!dbUser) {
-    return { error: 'Unauthorized' };
+    return { error: "Unauthorized" };
   }
 
   if (values.email && values.email !== user.email) {
     const existingUser = await getUserByEmail(values.email);
 
     if (existingUser && existingUser.id !== user.id) {
-      return { error: 'Email already in use!' };
+      return { error: "Email already in use!" };
     }
 
     const verificationToken = await generateVerificationToken(values.email);
     await sendVerificationEmail(
       verificationToken.email,
-      verificationToken.token
+      verificationToken.token,
     );
 
-    return { success: 'Verification email sent!' };
+    return { success: "Verification email sent!" };
   }
 
   if (user.isOAuth) {
@@ -47,5 +47,5 @@ export const ProfileSetting = async (values: ProfileSettingSchemaType) => {
     },
   });
 
-  return { success: 'User Account Updated !' };
+  return { success: "User Account Updated !" };
 };

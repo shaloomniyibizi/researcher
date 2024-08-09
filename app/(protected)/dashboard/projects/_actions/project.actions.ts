@@ -1,6 +1,6 @@
 "use server";
 
-import { getProjectByTitle } from "@/lib/data/project";
+import { getProjectByTitle } from "@/lib/data/project.actions";
 import db from "@/lib/db";
 import { projectIndex } from "@/lib/newPinecone";
 import { getEmbeddings } from "@/lib/openai";
@@ -17,7 +17,8 @@ export const addProject = async (values: ProjectSchemaType) => {
 
   const user = await currentUser();
 
-  if (!user) return { error: "Unauthorized to do this action !" };
+  if (!user || user.role !== "STUDENT")
+    return { error: "Unauthorized to do this action !" };
 
   const {
     challenges,
@@ -38,11 +39,7 @@ export const addProject = async (values: ProjectSchemaType) => {
     return { error: "Title already in use!" };
   }
 
-  const std = await db.student.findFirst({
-    where: { userId: user?.id },
-  });
-
-  if (!std) return { error: "You are not allowed to add project" };
+  if (!user) return { error: "You are not allowed to add project" };
 
   const project = await db.project.create({
     data: {
@@ -56,7 +53,7 @@ export const addProject = async (values: ProjectSchemaType) => {
       results,
       technologies,
       image,
-      studentId: std.id,
+      userId: user.id!,
     },
   });
 
@@ -66,7 +63,14 @@ export const addProject = async (values: ProjectSchemaType) => {
 
 export const getAllProjects = async () => {
   const projects = await db.project.findMany({
-    include: {
+    include: { 
+      user: {
+        include: {
+          College: true,
+          Department: true,
+          Field: true,
+        },
+      },
       comments: {
         include: {
           votes: true,
@@ -77,11 +81,6 @@ export const getAllProjects = async () => {
               author: true,
             },
           },
-        },
-      },
-      student: {
-        include: {
-          user: true,
         },
       },
     },
@@ -99,6 +98,13 @@ export const getAllProjectsByDate = async (from: Date, to: Date) => {
       },
     },
     include: {
+      user: {
+        include: {
+          College: true,
+          Department: true,
+          Field: true,
+        },
+      },
       comments: {
         include: {
           votes: true,
@@ -109,11 +115,6 @@ export const getAllProjectsByDate = async (from: Date, to: Date) => {
               author: true,
             },
           },
-        },
-      },
-      student: {
-        include: {
-          user: true,
         },
       },
     },
@@ -122,11 +123,18 @@ export const getAllProjectsByDate = async (from: Date, to: Date) => {
   return projects;
 };
 export const getProjectById = async (id: string) => {
-  const project = await db.project.findFirst({
+  const project = await db.project.findUnique({
     where: {
       id,
     },
     include: {
+      user: {
+        include: {
+          College: true,
+          Department: true,
+          Field: true,
+        },
+      },
       comments: {
         include: {
           votes: true,
@@ -139,9 +147,34 @@ export const getProjectById = async (id: string) => {
           },
         },
       },
-      student: {
+    },
+  });
+
+  return project;
+};
+export const getProjectByUserId = async (userId: string) => {
+  const project = await db.project.findMany({
+    where: {
+      userId: userId,
+    },
+    include: {
+      user: {
         include: {
-          user: true,
+          College: true,
+          Department: true,
+          Field: true,
+        },
+      },
+      comments: {
+        include: {
+          votes: true,
+          author: true,
+          replies: {
+            include: {
+              votes: true,
+              author: true,
+            },
+          },
         },
       },
     },
@@ -244,6 +277,11 @@ export async function RejectProject(id: string) {
   });
   if (!rejectproject) return { error: "Fail to delete project !" };
   return { success: "Project deleted successfully!" };
+}
+
+export async function GetaNumberOfProjects() {
+  const count = await db.project.count();
+  return count;
 }
 
 async function getEmbeddingsForProject(

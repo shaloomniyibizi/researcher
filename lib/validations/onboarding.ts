@@ -3,8 +3,9 @@ import { z } from "zod";
 export const OnboardingSchema = z.object({
   name: z.optional(z.string()),
   email: z.optional(z.string().email()),
-  department: z.string(),
-  year: z.string(),
+  collegeId: z.string(),
+  departmentId: z.string(),
+  fieldId: z.string(),
   onboarded: z.optional(z.boolean()),
   image: z.optional(z.string().url()),
   bio: z.optional(

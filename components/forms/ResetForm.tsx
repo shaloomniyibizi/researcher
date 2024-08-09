@@ -1,12 +1,13 @@
-'use client';
+"use client";
 
-import * as z from 'zod';
-import { useForm } from 'react-hook-form';
-import { useState, useTransition } from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 
-import { ResetSchema } from '@/lib/schemas';
-import { Input } from '@/components/ui/input';
+import { FormError } from "@/components/forms/FormError";
+import { FormSuccess } from "@/components/forms/FormSuccess";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -14,29 +15,28 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { reset } from '@/lib/actions/reset.actions';
-import { CardWrapper } from '@/components/cards/CardWrapper';
-import { FormSuccess } from '@/components/forms/FormSuccess';
-import { Button } from '@/components/ui/button';
-import { BeatLoader } from 'react-spinners';
-import { FormError } from '@/components/forms/FormError';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { reset } from "@/lib/actions/reset.actions";
+import { ResetSchema } from "@/lib/validations/user";
+import { BeatLoader } from "react-spinners";
+import { CardWrapper } from "../shared/CardWrapper";
 
 export const ResetForm = () => {
-  const [error, setError] = useState<string | undefined>('');
-  const [success, setSuccess] = useState<string | undefined>('');
+  const [error, setError] = useState<string | undefined>("");
+  const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<z.infer<typeof ResetSchema>>({
     resolver: zodResolver(ResetSchema),
     defaultValues: {
-      email: '',
+      email: "",
     },
   });
 
   const onSubmit = (values: z.infer<typeof ResetSchema>) => {
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     startTransition(() => {
       reset(values).then((data) => {
@@ -48,16 +48,16 @@ export const ResetForm = () => {
 
   return (
     <CardWrapper
-      label='Forgot your password?'
-      backLabel='Back to login'
-      backHref='/login'
+      label="Forgot your password?"
+      backLabel="Back to login"
+      backHref="/login"
     >
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
-          <div className='space-y-4'>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="space-y-4">
             <FormField
               control={form.control}
-              name='email'
+              name="email"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Email</FormLabel>
@@ -65,8 +65,8 @@ export const ResetForm = () => {
                     <Input
                       {...field}
                       disabled={isPending}
-                      placeholder='john.doe@example.com'
-                      type='email'
+                      placeholder="john.doe@example.com"
+                      type="email"
                     />
                   </FormControl>
                   <FormMessage />
@@ -76,8 +76,8 @@ export const ResetForm = () => {
           </div>
           <FormError message={error} />
           <FormSuccess message={success} />
-          <Button disabled={isPending} type='submit' className='w-full'>
-            {isPending ? <BeatLoader /> : 'Send reset email'}
+          <Button disabled={isPending} type="submit" className="w-full">
+            {isPending ? <BeatLoader /> : "Send reset email"}
           </Button>
         </form>
       </Form>

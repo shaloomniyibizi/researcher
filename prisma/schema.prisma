@@ -32,7 +32,6 @@ enum UserSystem {
   tool
 }
 
-// schema.prisma
 model User {
   id                    String                 @id @default(cuid())
   name                  String
@@ -47,14 +46,19 @@ model User {
   isTwoFactorEnabled    Boolean                @default(false)
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
-  student               Student?
-  faculty               Faculty?
   Account               Account[]
   twoFactorConfirmation TwoFactorConfirmation?
   comment               Comment[]
   votes                 Vote[]
   commentVote           CommentVote[]
   Chats                 Chats[]
+  collegeId             String?
+  departmentId          String?
+  fieldId               String?
+  College               College?               @relation(fields: [collegeId], references: [id])
+  Department            Department?            @relation(fields: [departmentId], references: [id])
+  Field                 Field?                 @relation(fields: [fieldId], references: [id])
+  Project               Project[]
 }
 
 model Account {
@@ -108,21 +112,33 @@ model TwoFactorConfirmation {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model Student {
-  id         String    @id @default(cuid())
-  userId     String    @unique
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  department String
-  year       String
-  projects   Project[]
+model College {
+  id         String       @id @default(cuid())
+  name       String       @unique
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  user       User[]
+  department Department[]
 }
 
-model Faculty {
-  id                 String    @id @default(cuid())
-  userId             String    @unique
-  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  department         String
-  supervisedProjects Project[]
+model Department {
+  id        String    @id @default(cuid())
+  name      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User[]
+  College   College[]
+  Field     Field[]
+}
+
+model Field {
+  id           String      @id @default(cuid())
+  name         String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  user         User[]
+  departmentId String?
+  Department   Department? @relation(fields: [departmentId], references: [id])
 }
 
 model Project {
@@ -138,10 +154,8 @@ model Project {
   technologies String
   image        String?
   status       ProjectStatus @default(pedding)
-  studentId    String
-  student      Student       @relation(fields: [studentId], references: [id])
-  facultyId    String?
-  faculty      Faculty?      @relation(fields: [facultyId], references: [id])
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   comments     Comment[]

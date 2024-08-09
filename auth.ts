@@ -1,9 +1,9 @@
-import { getAccountByUserId, getUserById } from "@/lib/data/user";
+import { getAccountByUserId, getUserById } from "@/lib/data/user.actions";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { Role } from "@prisma/client";
 import NextAuth from "next-auth";
 import authConfig from "./lib/config/auth.config";
-import { getTwoFactorConfirmationByUserId } from "./lib/data/token";
+import { getTwoFactorConfirmationByUserId } from "./lib/data/token.actions";
 import db from "./lib/db";
 
 export const {

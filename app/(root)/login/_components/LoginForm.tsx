@@ -1,11 +1,13 @@
 "use client";
 import Link from "next/link";
 
+import { FormError } from "@/components/forms/FormError";
+import { FormSuccess } from "@/components/forms/FormSuccess";
 import CustomFormField, {
   FormFieldType,
 } from "@/components/shared/CustomFormField";
 import { Social } from "@/components/shared/Social";
-import SubmitButton from "@/components/shared/SubmitButton";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -22,13 +24,20 @@ import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
+import { BeatLoader } from "react-spinners";
 import { toast } from "react-toastify";
 const LoginForm = () => {
   const router = useRouter();
   const { update } = useSession();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl");
+  const urlError =
+    searchParams.get("error") === "OAuthAccountNotLinked"
+      ? "Email already in use with different provider!"
+      : "";
   const [showTwoFactor, setShowTwoFactor] = React.useState(false);
+  const [error, setError] = React.useState<string | undefined>("");
+  const [success, setSuccess] = React.useState<string | undefined>("");
   const [isPending, startTransition] = React.useTransition();
 
   // 1. Define your form.
@@ -48,6 +57,7 @@ const LoginForm = () => {
           if (data?.error) {
             form.reset();
             toast.error(data.error);
+            setError(data.error);
           }
 
           if (data?.success) {
@@ -55,6 +65,7 @@ const LoginForm = () => {
             router.refresh();
             update();
             toast.success(data.success);
+            setSuccess(data.success);
           }
 
           if (data?.twoFactor) {
@@ -65,59 +76,97 @@ const LoginForm = () => {
     });
   }
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <Card>
-          <CardHeader>
-            <CardTitle>Login</CardTitle>
-            <CardDescription>
-              Enter your email below to login to your account
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <CustomFormField
-              fieldType={FormFieldType.INPUT}
-              control={form.control}
-              name="email"
-              placeholder="Login email"
-              label="Email"
-              type="email"
-            />
-            <CustomFormField
-              fieldType={FormFieldType.INPUT}
-              control={form.control}
-              name="password"
-              placeholder="Login password"
-              label="Password"
-              type="password"
-            />
-            <SubmitButton isLoading={isPending} className="mt-2">
-              Login
-            </SubmitButton>
-          </CardContent>
-          <CardFooter className="grid gap-4">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with
-                </span>
-              </div>
-            </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Login</CardTitle>
+        <CardDescription>
+          Enter your email below to login to your account
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="flex flex-col gap-4"
+          >
+            {showTwoFactor && (
+              <CustomFormField
+                fieldType={FormFieldType.INPUT}
+                id="twofactor"
+                control={form.control}
+                name="email"
+                placeholder="Login email"
+                label="Email"
+                type="number"
+                autoCapitalize="none"
+                autoComplete="twofactor"
+                autoCorrect="off"
+                disabled={isPending}
+              />
+            )}
+            {!showTwoFactor && (
+              <>
+                <CustomFormField
+                  fieldType={FormFieldType.INPUT}
+                  control={form.control}
+                  name="email"
+                  placeholder="Login email"
+                  label="Email"
+                  type="email"
+                  disabled={isPending}
+                />
+                <CustomFormField
+                  fieldType={FormFieldType.INPUT}
+                  control={form.control}
+                  name="password"
+                  placeholder="Login password"
+                  label="Password"
+                  type="password"
+                  disabled={isPending}
+                />
+                <Button
+                  size="sm"
+                  variant="link"
+                  asChild
+                  className="-mt-4 w-fit px-0 text-end font-normal"
+                >
+                  <Link href="/reset">Forgot password?</Link>
+                </Button>
+              </>
+            )}
+            <FormError message={error || urlError} />
+            <FormSuccess message={success} />
+            <Button disabled={isPending} type="submit" className="w-full">
+              {showTwoFactor ? (
+                <>{isPending ? <BeatLoader /> : "Confirm"}</>
+              ) : (
+                <>{isPending ? <BeatLoader /> : "Login"}</>
+              )}
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+      <CardFooter className="grid gap-4">
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">
+              Or continue with
+            </span>
+          </div>
+        </div>
 
-            <Social />
-            <div className="text-center text-sm">
-              Don&apos;t have an account?{" "}
-              <Link href="#" className="underline">
-                Sign up
-              </Link>
-            </div>
-          </CardFooter>
-        </Card>
-      </form>
-    </Form>
+        <Social />
+        <div className="text-center text-sm">
+          Don&apos;t have an account?{" "}
+          <Link href="#" className="underline">
+            Sign up
+          </Link>
+        </div>
+      </CardFooter>
+    </Card>
   );
 };
 

@@ -101,9 +101,7 @@ const ProjectDetail = ({ project }: ProjectProps) => {
               <Heart className="hover:fill-red-700 hover:stroke-red-700" />
             </div>
             <div className="mt-2 flex flex-col">
-              <p className="text-gray-600">
-                Author: {project.student.user.name}
-              </p>
+              <p className="text-gray-600">Author: {project.user.name}</p>
               <p className="text-gray-600">
                 Published on: {dateToUTCDate(project.createdAt).toDateString()}
               </p>

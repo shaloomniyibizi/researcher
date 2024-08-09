@@ -1,6 +1,6 @@
 "use server";
 
-import { getUserByEmail, getUserById } from "@/lib/data/user";
+import { getUserByEmail, getUserById } from "@/lib/data/user.actions";
 import db from "@/lib/db";
 import { sendVerificationEmail } from "@/lib/emails";
 import { generateVerificationToken } from "@/lib/tokens";
@@ -17,8 +17,16 @@ export const onboarding = async (values: OnboardingSchemaType) => {
     return { error: "Invalid fields!" };
   }
 
-  const { department, year, bio, email, image, name, onboarded } =
-    validatedFields.data;
+  const {
+    departmentId,
+    fieldId,
+    bio,
+    email,
+    image,
+    name,
+    onboarded,
+    collegeId,
+  } = validatedFields.data;
   const user = await currentUser();
 
   if (!user) {
@@ -51,28 +59,20 @@ export const onboarding = async (values: OnboardingSchemaType) => {
     values.email = user.email!;
   }
 
-  await db.$transaction([
-    // update user
-    db.user.update({
-      where: { id: dbUser.id },
-      data: {
-        bio,
-        email,
-        image,
-        name,
-        onboarded,
-      },
-    }),
-
-    // create student
-    db.student.create({
-      data: {
-        department,
-        year,
-        userId: dbUser.id,
-      },
-    }),
-  ]);
+  // update user
+  await db.user.update({
+    where: { id: dbUser.id },
+    data: {
+      departmentId,
+      collegeId,
+      bio,
+      email,
+      image,
+      name,
+      onboarded,
+      fieldId,
+    },
+  });
 
   return { success: "Successfully onboarded !" };
 };

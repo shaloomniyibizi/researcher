@@ -20,6 +20,12 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { SelectItem } from "@/components/ui/select";
+import {
+  getAllColleges,
+  getAllDepartments,
+  getAllFields,
+} from "@/lib/data/collage.actions";
 import { useUploadThing } from "@/lib/uploadthing";
 import { isBase64Image } from "@/lib/utils";
 import {
@@ -27,6 +33,7 @@ import {
   OnboardingSchemaType,
 } from "@/lib/validations/onboarding";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery } from "@tanstack/react-query";
 import { ImageIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
@@ -48,14 +55,29 @@ const OnboardingForm = ({ user }: Props) => {
   const { startUpload } = useUploadThing("imageUploader");
 
   const [files, setFiles] = useState<File[]>([]);
+
+  const { data: colleges } = useQuery({
+    queryKey: ["colleges"],
+    queryFn: async () => await getAllColleges(),
+  });
+  const { data: departments } = useQuery({
+    queryKey: ["departments"],
+    queryFn: async () => await getAllDepartments(),
+  });
+  const { data: fields } = useQuery({
+    queryKey: ["fields"],
+    queryFn: async () => await getAllFields(),
+  });
+
   // 1. Define your form.
   const form = useForm<OnboardingSchemaType>({
     resolver: zodResolver(OnboardingSchema),
     defaultValues: {
       name: user.name || undefined,
       email: user?.email || undefined,
-      department: "",
-      year: "",
+      collegeId: "",
+      departmentId: "",
+      fieldId: "",
       onboarded: true,
       image: user?.image || undefined,
       bio: user?.bio || undefined,
@@ -178,21 +200,47 @@ const OnboardingForm = ({ user }: Props) => {
               disabled
             />
             <CustomFormField
-              fieldType={FormFieldType.INPUT}
+              fieldType={FormFieldType.SELECT}
               control={form.control}
-              name="department"
-              placeholder="Enter Department"
+              name="collegeId"
+              placeholder="Select College"
+              label="College"
+            >
+              {colleges?.map((college, i) => (
+                <SelectItem key={college.name + i} value={college.id}>
+                  <p>{college.name}</p>
+                </SelectItem>
+              ))}
+            </CustomFormField>
+            <CustomFormField
+              fieldType={FormFieldType.SELECT}
+              control={form.control}
+              name="departmentId"
+              placeholder="Select Department"
               label="Department"
-            />
+            >
+              {departments?.map((department, i) => (
+                <SelectItem key={department.name + i} value={department.id}>
+                  <p>{department.name}</p>
+                </SelectItem>
+              ))}
+            </CustomFormField>
             <CustomFormField
-              fieldType={FormFieldType.INPUT}
+              fieldType={FormFieldType.SELECT}
               control={form.control}
-              name="year"
-              placeholder="Enter Academic Year"
-              label="Academic Year"
-            />
+              name="fieldId"
+              placeholder="Select Field"
+              label="Field"
+            >
+              {fields?.map((field, i) => (
+                <SelectItem key={field.name + i} value={field.id}>
+                  <p>{field.name}</p>
+                </SelectItem>
+              ))}
+            </CustomFormField>
+
             <CustomFormField
-              fieldType={FormFieldType.INPUT}
+              fieldType={FormFieldType.TEXTAREA}
               control={form.control}
               name="bio"
               placeholder="Enter Biography"

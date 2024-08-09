@@ -1,6 +1,6 @@
 "use server";
 
-import { getUserById } from "@/lib/data/user";
+import { getUserById } from "@/lib/data/user.actions";
 import db from "@/lib/db";
 import { CachedProject } from "@/lib/types/redis";
 import { currentUser } from "@/lib/userAuth";
@@ -93,11 +93,7 @@ export const addVote = async (values: VoteSchemaType) => {
         id: projectId,
       },
       include: {
-        student: {
-          include: {
-            user: true,
-          },
-        },
+        user: true,
         votes: true,
       },
     });
@@ -127,7 +123,7 @@ export const addVote = async (values: VoteSchemaType) => {
 
         if (votesAmt >= CACHE_AFTER_UPVOTES) {
           const cachePayload: CachedProject = {
-            studentName: project.student.user.name ?? "",
+            userName: project.user.name ?? "",
             description: JSON.stringify(project.description),
             id: project.id,
             title: project.title,
@@ -163,7 +159,7 @@ export const addVote = async (values: VoteSchemaType) => {
 
       if (votesAmt >= CACHE_AFTER_UPVOTES) {
         const cachePayload: CachedProject = {
-          studentName: project.student.user.name ?? "",
+          userName: project.user.name ?? "",
           description: JSON.stringify(project.description),
           id: project.id,
           title: project.title,
@@ -195,7 +191,7 @@ export const addVote = async (values: VoteSchemaType) => {
 
     if (votesAmt >= CACHE_AFTER_UPVOTES) {
       const cachePayload: CachedProject = {
-        studentName: project.student.user.name ?? "",
+        userName: project.user.name ?? "",
         description: JSON.stringify(project.description),
         id: project.id,
         title: project.title,
@@ -243,11 +239,7 @@ export const commentVote = async (values: VoteSchemaType) => {
         id: projectId,
       },
       include: {
-        student: {
-          include: {
-            user: true,
-          },
-        },
+        user: true,
         votes: true,
       },
     });
@@ -277,7 +269,7 @@ export const commentVote = async (values: VoteSchemaType) => {
 
         if (votesAmt >= CACHE_AFTER_UPVOTES) {
           const cachePayload: CachedProject = {
-            studentName: project.student.user.name ?? "",
+            userName: project.user.name ?? "",
             description: JSON.stringify(project.description),
             id: project.id,
             title: project.title,
@@ -313,7 +305,7 @@ export const commentVote = async (values: VoteSchemaType) => {
 
       if (votesAmt >= CACHE_AFTER_UPVOTES) {
         const cachePayload: CachedProject = {
-          studentName: project.student.user.name ?? "",
+          userName: project.user.name ?? "",
           description: JSON.stringify(project.description),
           id: project.id,
           title: project.title,
@@ -345,7 +337,7 @@ export const commentVote = async (values: VoteSchemaType) => {
 
     if (votesAmt >= CACHE_AFTER_UPVOTES) {
       const cachePayload: CachedProject = {
-        studentName: project.student.user.name ?? "",
+        userName: project.user.name ?? "",
         description: JSON.stringify(project.description),
         id: project.id,
         title: project.title,

@@ -1,31 +1,11 @@
+import { getAllProjects } from "@/app/(protected)/dashboard/projects/_actions/project.actions";
 import Filters from "@/app/(protected)/dashboard/projects/_components/Filters";
 import ProjectCard from "@/app/(protected)/dashboard/projects/_components/ProjectCard";
 import Footer from "@/components/shared/Footer";
-import db from "@/lib/db";
 import Head from "next/head";
 
 async function page() {
-  const projects = await db.project.findMany({
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      technologies: true,
-      image: true,
-      createdAt: true,
-      student: {
-        select: {
-          field: true,
-          user: {
-            select: {
-              name: true,
-              email: true,
-            },
-          },
-        },
-      },
-    },
-  });
+  const projects = await getAllProjects();
   return (
     <div>
       <Head>

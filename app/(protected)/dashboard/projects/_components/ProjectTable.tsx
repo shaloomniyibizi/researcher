@@ -124,13 +124,13 @@ const columns: ColumnDef<ProjectRow>[] = [
       <div
         className={cn(
           "rounded-lg p-2 text-center capitalize",
-          row.original.student.department === "ICT" &&
+          row.original.user.Department.name === "ICT" &&
             "bg-emerald-400/10 text-emerald-500",
-          row.original.student.department !== "ICT" &&
+          row.original.user.Department.name !== "ICT" &&
             "bg-red-400/10 text-red-500",
         )}
       >
-        {row.original.student.department}
+        {row.original.user.Department.name}
       </div>
     ),
   },
@@ -163,7 +163,7 @@ const columns: ColumnDef<ProjectRow>[] = [
     ),
     cell: ({ row }) => (
       <p className="text-nowrap rounded p-2 text-center font-medium">
-        {row.original.student.user.name}
+        {row.original.user.name}
       </p>
     ),
   },
@@ -230,9 +230,9 @@ function ProjectTable({ from, to }: ProjectTableProps) {
   const departmentOptions = useMemo(() => {
     const departmentMap = new Map();
     project?.forEach((project) => {
-      departmentMap.set(project.student.department, {
-        value: project.student.department,
-        label: project.student.department,
+      departmentMap.set(project.user.Department.name, {
+        value: project.user.Department.name,
+        label: project.user.Department.name,
       });
     });
     const uniquDepartment = new Set(departmentMap.values());
@@ -297,8 +297,8 @@ function ProjectTable({ from, to }: ProjectTableProps) {
                   TITLE: row.original.title,
                   DESCRIPTION: row.original.description,
                   STUTUS: row.original.status,
-                  DEPARTMENT: row.original.student.department,
-                  AUTHOR: row.original.student.user.name,
+                  DEPARTMENT: row.original.user.Department.name,
+                  AUTHOR: row.original.user.name,
                   DATE: row.original.createdAt,
                 }));
                 handleExportCSV(data);

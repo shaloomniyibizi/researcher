@@ -34,7 +34,8 @@ const ProjectCard = ({ project }: Props) => {
         <CardHeader>
           <CardTitle>{project.title}</CardTitle>
           <CardDescription>
-            At Tumba in {project.student.department} Department
+            At {project.user.College!.name} in {project.user.Department!.name}{" "}
+            Department {project.user.Field!.name} Field
           </CardDescription>
         </CardHeader>
         <CardContent className="flex-1">
@@ -46,7 +47,7 @@ const ProjectCard = ({ project }: Props) => {
         <Separator />
         <CardFooter className="mt-4">
           <CardDescription className="flex w-full items-center justify-between">
-            <span>By {project.student.user.name}</span>
+            <span>By {project.user.name}</span>
             <span>
               {dateToUTCDate(project.createdAt).toLocaleString("default", {
                 day: "2-digit",

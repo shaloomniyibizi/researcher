@@ -1,36 +1,36 @@
-'use server';
+"use server";
 
-import { getUserById } from '@/lib/data/user';
-import { currentUser } from '@/lib/userAuth';
-import bcrypt from 'bcryptjs';
-import db from '../../../../../lib/db';
-import { SecuritySettingsSchemaType } from '../../../../../lib/validations/user';
+import { getUserById } from "@/lib/data/user.actions";
+import { currentUser } from "@/lib/userAuth";
+import bcrypt from "bcryptjs";
+import db from "../../../../../lib/db";
+import { SecuritySettingsSchemaType } from "../../../../../lib/validations/user";
 
 export const SecuritySettings = async (values: SecuritySettingsSchemaType) => {
   const user = await currentUser();
 
   if (!user) {
-    return { error: 'Unauthorized' };
+    return { error: "Unauthorized" };
   }
 
   const dbUser = await getUserById(user.id as string);
 
   if (!dbUser) {
-    return { error: 'Unauthorized' };
+    return { error: "Unauthorized" };
   }
 
   if (values.password && values.newPassword && dbUser.password) {
     const passwordsMatch = await bcrypt.compare(
       values.password,
-      dbUser.password
+      dbUser.password,
     );
 
     if (!passwordsMatch) {
-      return { error: 'Incorrect current password!' };
+      return { error: "Incorrect current password!" };
     }
 
     if (values.newPassword !== values.confirmPassword) {
-      return { error: 'comfirmation password not match!' };
+      return { error: "comfirmation password not match!" };
     }
 
     const hashedPassword = await bcrypt.hash(values.newPassword, 10);
@@ -52,5 +52,5 @@ export const SecuritySettings = async (values: SecuritySettingsSchemaType) => {
     },
   });
 
-  return { success: 'User Password Updated !' };
+  return { success: "User Password Updated !" };
 };

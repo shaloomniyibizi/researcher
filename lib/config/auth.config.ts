@@ -1,10 +1,10 @@
-import bcrypt from 'bcryptjs';
-import type { NextAuthConfig } from 'next-auth';
-import Credentials from 'next-auth/providers/credentials';
-import Github from 'next-auth/providers/github';
-import Google from 'next-auth/providers/google';
-import { getUserByEmail } from '../data/user';
-import { LoginSchema } from '../validations/user';
+import bcrypt from "bcryptjs";
+import type { NextAuthConfig } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
+import Github from "next-auth/providers/github";
+import Google from "next-auth/providers/google";
+import { getUserByEmail } from "../data/user.actions";
+import { LoginSchema } from "../validations/user";
 
 export default {
   providers: [

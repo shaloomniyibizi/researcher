@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { logout } from '@/lib/actions/logout.actions';
-import { useRouter } from 'next/navigation';
+import { logout } from "@/lib/actions/logout.actions";
+import { useRouter } from "next/navigation";
 
 interface LogoutButtonProps {
   children?: React.ReactNode;
@@ -15,7 +15,7 @@ export const LogoutButton = ({ children }: LogoutButtonProps) => {
   };
 
   return (
-    <span onClick={onClick} className='cursor-pointer'>
+    <span onClick={onClick} className="cursor-pointer">
       {children}
     </span>
   );

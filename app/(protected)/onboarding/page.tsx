@@ -1,4 +1,4 @@
-import { getStudentByUserId, getUserById } from "@/lib/data/user";
+import { getUserById } from "@/lib/data/user.actions";
 import { currentUser } from "@/lib/userAuth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -10,7 +10,6 @@ const OnboardingPage = async () => {
   const userInfo = await getUserById(user?.id!);
 
   if (!userInfo) redirect("/login");
-  const stdInfo = await getStudentByUserId(userInfo?.id);
 
   if (userInfo?.onboarded) {
     revalidatePath("/dashboard");
@@ -22,8 +21,9 @@ const OnboardingPage = async () => {
     email: userInfo?.email || "",
     bio: userInfo?.bio || "",
     image: userInfo?.image || "",
-    department: stdInfo?.department || "",
-    year: stdInfo?.year || "",
+    collegeId: "",
+    departmentId: "",
+    fieldId: "",
     onboarded: true,
   };
 

@@ -10,18 +10,16 @@ export const getUserByEmail = async (email: string) => {
   }
 };
 
-export const getStudentByUserId = async (id: string) => {
-  try {
-    const user = await db.student.findUnique({ where: { userId: id } });
-
-    return user;
-  } catch {
-    return null;
-  }
-};
 export const getUserById = async (id: string) => {
   try {
-    const user = await db.user.findUnique({ where: { id } });
+    const user = await db.user.findUnique({
+      where: { id },
+      include: {
+        College: true,
+        Department: true,
+        Field: true,
+      },
+    });
 
     return user;
   } catch {
@@ -29,6 +27,7 @@ export const getUserById = async (id: string) => {
   }
 };
 
+export type GetUserByIdType = Awaited<ReturnType<typeof getUserById>>;
 export const getAccountByUserId = async (userId: string) => {
   try {
     const account = await db.account.findFirst({

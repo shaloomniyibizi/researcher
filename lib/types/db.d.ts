@@ -1,11 +1,20 @@
-import { Comment, Project, Student, User } from "@prisma/client";
+import {
+  Collage,
+  Comment,
+  Department,
+  Field,
+  Project,
+  User,
+} from "@prisma/client";
 
 export type ExtendedProject = Project & {
-  student: ExtendedStudent;
+  user: ExtendedUser;
   comments: ExtendedComment[];
 };
-export type ExtendedStudent = Student & {
-  user: User;
+export type ExtendedUser = User & {
+  College: Collage | null;
+  Department: Department | null;
+  Field: Field | null;
 };
 
 export type ExtendedComment = Comment & {
