@@ -1,18 +1,17 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuery } from "@tanstack/react-query";
 import { Message, useChat } from "ai/react";
 import axios from "axios";
 import { Send } from "lucide-react";
-import React from "react";
+import { useEffect, useRef } from "react";
 import MessageList from "./MessageList";
 
 type Props = { id: string };
 
 const ChatComponent = ({ id }: Props) => {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading: isMessageLoading } = useQuery({
     queryKey: ["chat", id],
     queryFn: async () => {
       const response = await axios.post<Message[]>("/api/get-messages", {
@@ -22,15 +21,28 @@ const ChatComponent = ({ id }: Props) => {
     },
   });
 
-  const { input, handleInputChange, handleSubmit, messages } = useChat({
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    setMessages,
+    isLoading,
+    error,
+  } = useChat({
     api: "/api/chat",
     body: {
       id,
     },
     initialMessages: data || [],
   });
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
     const messageContainer = document.getElementById("message-container");
     if (messageContainer) {
       messageContainer.scrollTo({
@@ -47,10 +59,15 @@ const ChatComponent = ({ id }: Props) => {
       </div>
 
       <div className="flex h-full flex-col">
-        <ScrollArea className="flex-1">
+        <div className="flex-1 overflow-y-auto">
           {/* message list */}
-          <MessageList messages={messages} isLoading={isLoading} />
-        </ScrollArea>
+          <MessageList
+            messages={messages}
+            isLoading={isMessageLoading}
+            error={error}
+            isThinking={isLoading}
+          />
+        </div>
 
         <form
           onSubmit={handleSubmit}

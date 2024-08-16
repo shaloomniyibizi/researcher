@@ -1,20 +1,13 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { cn } from "@/lib/utils";
 import { Message, useChat } from "ai/react";
-import { Bot, Trash, XCircle } from "lucide-react";
+import { Bot, Trash } from "lucide-react";
 import { useEffect, useRef } from "react";
 import UserAvatar from "./UserAvatar";
 
-type AIChatBotProps = {
-  open: boolean;
-  onClose: () => void;
-};
-
-const AIChatBot = ({ open, onClose }: AIChatBotProps) => {
+const AIChatBot = () => {
   const {
     messages,
     input,
@@ -34,30 +27,15 @@ const AIChatBot = ({ open, onClose }: AIChatBotProps) => {
     }
   }, [messages]);
   useEffect(() => {
-    if (open) {
-      inputRef.current?.focus();
-    }
-  }, [open]);
+    inputRef.current?.focus();
+  }, []);
 
   const lastMessageIsUser = messages[messages.length - 1]?.role === "user";
 
   return (
-    <div
-      className={cn(
-        "bottom-0 right-0 z-10 w-full max-w-[500px] p-1 xl:right-36",
-        open ? "fixed" : "hidden",
-      )}
-    >
-      <Button
-        onClick={onClose}
-        size={"icon"}
-        variant={"ghost"}
-        className="ms-auto flex items-center justify-center rounded-full"
-      >
-        <XCircle size={30} />
-      </Button>
-      <div className="flex h-[600px] flex-col rounded border bg-card text-card-foreground shadow-xl">
-        <ScrollArea className="mt-3 h-full px-3" ref={scrollRef}>
+    <div className={cn("bottom-0 right-0 z-10 w-[500px] p-1 xl:right-36")}>
+      <div className="flex h-[550px] flex-col rounded shadow-xl">
+        <div className="mt-3 h-full overflow-y-auto px-3" ref={scrollRef}>
           {messages.map((message) => (
             <ChatMessage message={message} key={message.id} />
           ))}
@@ -80,10 +58,10 @@ const AIChatBot = ({ open, onClose }: AIChatBotProps) => {
           {!error && messages.length === 0 && (
             <div className="flex h-full items-center justify-center gap-3">
               <Bot />
-              Ask the AI a question about your project
+              Start conversation with smart research assistant
             </div>
           )}
-        </ScrollArea>
+        </div>
         <form onSubmit={handleSubmit} className="m-3 flex gap-1">
           <Button
             title="Clear chat"
@@ -115,17 +93,15 @@ function ChatMessage({
 }: {
   message: Pick<Message, "role" | "content">;
 }) {
-  const user = useCurrentUser();
-
   const isAIMessage = role === "assistant";
   return (
     <div
       className={cn(
-        "mb-1 flex items-center",
+        "mb-1 flex items-start",
         isAIMessage ? "me-5 justify-start" : "ms-5 justify-end",
       )}
     >
-      {isAIMessage && <Bot className="mr-1 shrink-0" />}
+      {isAIMessage && <Bot className="mr-1 h-8 w-8 shrink-0" />}
       <p
         className={cn(
           "whitespace-pre-line rounded border px-3 py-2",
@@ -136,7 +112,7 @@ function ChatMessage({
       </p>
       {!isAIMessage && (
         <div className="ml-1">
-          <UserAvatar user={user!} />
+          <UserAvatar className="h-8 w-8" />
         </div>
       )}
     </div>

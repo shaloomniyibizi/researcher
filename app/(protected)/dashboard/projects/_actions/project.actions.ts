@@ -63,7 +63,7 @@ export const addProject = async (values: ProjectSchemaType) => {
 
 export const getAllProjects = async () => {
   const projects = await db.project.findMany({
-    include: { 
+    include: {
       user: {
         include: {
           College: true,
@@ -89,12 +89,21 @@ export const getAllProjects = async () => {
   return projects;
 };
 export type GetAllProjectsType = Awaited<ReturnType<typeof getAllProjects>>;
-export const getAllProjectsByDate = async (from: Date, to: Date) => {
+export const getAllProjectsByDate = async (
+  from: Date,
+  to: Date,
+  collegeId: string,
+) => {
   const projects = await db.project.findMany({
     where: {
-      createdAt: {
-        gte: from,
-        lte: to,
+      AND: {
+        createdAt: {
+          gte: from,
+          lte: to,
+        },
+        user: {
+          collegeId,
+        },
       },
     },
     include: {
@@ -228,6 +237,9 @@ export async function AcceptProject(id: string) {
   const embedding = await getEmbeddingsForProject(
     project.title,
     project.description,
+    project.objective!,
+    project.challenges,
+    project.results,
   );
   //Accept project from db
   const acceptproject = await db.$transaction(async (txt) => {
@@ -287,6 +299,19 @@ export async function GetaNumberOfProjects() {
 async function getEmbeddingsForProject(
   title: string,
   description: string | undefined,
+  objective: string | undefined,
+  challenges: string | undefined,
+  results: string | undefined,
 ) {
-  return getEmbeddings(title + "\n\n" + description ?? "");
+  return getEmbeddings(
+    title +
+      "\n\n" +
+      description +
+      "\n\n" +
+      objective +
+      "\n\n" +
+      challenges +
+      "\n\n" +
+      results ?? "",
+  );
 }

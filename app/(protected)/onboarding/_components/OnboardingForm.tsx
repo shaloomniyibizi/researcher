@@ -18,14 +18,10 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { SelectItem } from "@/components/ui/select";
-import {
-  getAllColleges,
-  getAllDepartments,
-  getAllFields,
-} from "@/lib/data/collage.actions";
 import { useUploadThing } from "@/lib/uploadthing";
 import { isBase64Image } from "@/lib/utils";
 import {
@@ -41,7 +37,11 @@ import { useRouter } from "next/navigation";
 import { ChangeEvent, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
+import { getColleges } from "../../dashboard/college/_actions/collage.actions";
+import { getDepartments } from "../../dashboard/college/_actions/department.actions";
+import { getFields } from "../../dashboard/college/_actions/field.actions";
 import { onboarding } from "../_actions/onboarding.actions";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Props {
   user: OnboardingSchemaType;
@@ -58,15 +58,15 @@ const OnboardingForm = ({ user }: Props) => {
 
   const { data: colleges } = useQuery({
     queryKey: ["colleges"],
-    queryFn: async () => await getAllColleges(),
+    queryFn: async () => await getColleges(),
   });
   const { data: departments } = useQuery({
     queryKey: ["departments"],
-    queryFn: async () => await getAllDepartments(),
+    queryFn: async () => await getDepartments(),
   });
   const { data: fields } = useQuery({
     queryKey: ["fields"],
-    queryFn: async () => await getAllFields(),
+    queryFn: async () => await getFields(),
   });
 
   // 1. Define your form.
@@ -239,12 +239,24 @@ const OnboardingForm = ({ user }: Props) => {
               ))}
             </CustomFormField>
 
-            <CustomFormField
-              fieldType={FormFieldType.TEXTAREA}
+            <FormField
               control={form.control}
               name="bio"
-              placeholder="Enter Biography"
-              label="Biography"
+              disabled={isPending}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bio</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      rows={3}
+                      className="account-form_input no-focus"
+                      {...field}
+                      placeholder="Tell us a little about yourself"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
           </CardContent>
           <CardFooter className="border-t px-6 py-4">

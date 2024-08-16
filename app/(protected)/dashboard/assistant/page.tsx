@@ -14,14 +14,13 @@ import { Loader2 } from "lucide-react";
 import { useState } from "react";
 
 function AssistantPage() {
-  const [interest, setInterest] = useState("");
-  const [experience, setExperience] = useState("");
+  const [preferences, setPreferences] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [projects, setProjects] = useState<any[]>([]);
 
   async function onSubmit() {
     setIsLoading(true);
-    let r = await generateProjects(interest, experience);
+    let r = await generateProjects(preferences);
     setProjects(r);
     setIsLoading(false);
   }
@@ -32,14 +31,8 @@ function AssistantPage() {
         <Input
           type="text"
           placeholder="Specifies Your interest"
-          value={interest}
-          onChange={(e) => setInterest(e.target.value)}
-        />
-        <Input
-          type="text"
-          placeholder="Specifies Your experience technology"
-          value={experience}
-          onChange={(e) => setExperience(e.target.value)}
+          value={preferences}
+          onChange={(e) => setPreferences(e.target.value)}
         />
         <Button onClick={() => onSubmit()} type="submit">
           Generate Idea
@@ -61,19 +54,14 @@ function AssistantPage() {
                   <div className="">Possible solution: </div>
                   <p>{project.solution}</p>
                   <div className="">Objectives: </div>
-                  <div className="mb-2 rounded border border-border bg-card text-card-foreground shadow-sm">
-                    <ul className="ml-4 list-disc p-2 text-sm">
-                      {project.objectives.map(
-                        (objective: string, index: number) => (
-                          <li key={index}>{objective}</li>
-                        ),
-                      )}
-                    </ul>
-                  </div>
+
+                  <p>{project.objectives}</p>
                   <ol className="ml-4 list-decimal">
-                    {project.features.map((feature: string, index: number) => (
-                      <li key={index}>{feature}</li>
-                    ))}
+                    {project.features
+                      .split(",")
+                      .map((feature: string, index: number) => (
+                        <li key={index}>{feature}</li>
+                      ))}
                   </ol>
                 </div>
                 <Button onClick={() => alert("You clicked the button")}>

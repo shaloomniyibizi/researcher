@@ -10,15 +10,23 @@ import {
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { Separator } from "@/components/ui/separator";
 import { MAX_DATE_RANGE_DAYS } from "@/lib/constants";
+import db from "@/lib/db";
+import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
+import { useQuery } from "@tanstack/react-query";
 import { differenceInDays, startOfYear } from "date-fns";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "react-toastify";
 import ProjectTable from "./ProjectTable";
 
 function ProjectPageWrapper() {
   const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
     from: startOfYear(new Date()),
     to: new Date(),
+  });
+  const user = useCurrentUser();
+  const { data: dbUser, isFetching } = useQuery({
+    queryKey: ["projects"],
+    queryFn: async () => await db.user.findFirst({ where: { id: user?.id } }),
   });
   return (
     <Card>
@@ -51,7 +59,11 @@ function ProjectPageWrapper() {
       </CardHeader>
       <Separator />
       <CardContent>
-        <ProjectTable from={dateRange.from} to={dateRange.to} />
+        <ProjectTable
+          from={dateRange.from}
+          to={dateRange.to}
+          collegeId={dbUser?.collegeId!}
+        />
       </CardContent>
     </Card>
   );

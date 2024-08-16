@@ -1,3 +1,5 @@
+"use server";
+
 import db from "../db";
 
 export const getUserByEmail = async (email: string) => {

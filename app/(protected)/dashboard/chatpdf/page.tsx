@@ -1,7 +1,14 @@
 import { Button } from "@/components/ui/button";
+import { currentUser } from "@/lib/userAuth";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 import FileUpload from "./_components/FileUpload";
+import { getChatsByUserId } from "./actions/chats.actions";
 
-function ChatpdfPage() {
+async function ChatpdfPage() {
+  const user = await currentUser();
+  const chats = await getChatsByUserId(user?.id!);
+
   return (
     <div className="flex h-full flex-col items-center justify-center text-center">
       <div className="flex items-center justify-center">
@@ -12,7 +19,11 @@ function ChatpdfPage() {
         answer questions and understand research with AI
       </p>
       <div className="mt-2 flex">
-        <Button>Go go chats</Button>
+        <Button asChild>
+          <Link href={`/dashboard/chatpdf/${chats?.id}`}>
+            Go to Chats <ArrowRight className="ml-2" />
+          </Link>
+        </Button>
       </div>
       <div className="mt-4 w-full">
         <FileUpload />

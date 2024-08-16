@@ -16,7 +16,7 @@ const SearchBar = () => {
 
   const search = () => {
     startTransition(() => {
-      router.push(`/dashboard/summarizer/search?query=${query}`);
+      router.push(`/dashboard/plagiarism/search?query=${query}`);
     });
   };
 

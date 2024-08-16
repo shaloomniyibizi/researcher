@@ -11,41 +11,25 @@ export const LoginSchema = z.object({
   code: z.optional(z.string()),
 });
 
-export const SettingsSchema = z
-  .object({
-    name: z.optional(z.string()),
-    isTwoFactorEnabled: z.optional(z.boolean()),
-    role: z.enum([Role.ADMIN, Role.FACULTY, Role.STUDENT]),
-    email: z.optional(z.string().email()),
-    password: z.optional(z.string().min(6)),
-    newPassword: z.optional(z.string().min(6)),
-  })
-  .refine(
-    (data) => {
-      if (data.password && !data.newPassword) {
-        return false;
-      }
-
-      return true;
-    },
-    {
-      message: "New password is required!",
-      path: ["newPassword"],
-    },
-  )
-  .refine(
-    (data) => {
-      if (data.newPassword && !data.password) {
-        return false;
-      }
-
-      return true;
-    },
-    {
-      message: "Password is required!",
-      path: ["password"],
-    },
-  );
+export const SettingsSchema = z.object({
+  name: z.optional(z.string()),
+  email: z.optional(z.string().email()),
+  phoneNumber: z.string(),
+  collegeId: z.string(),
+  departmentId: z.string(),
+  fieldId: z.string(),
+  role: z.enum([Role.ADMIN, Role.FACULTY, Role.STUDENT]),
+  onboarded: z.optional(z.boolean()),
+  image: z.optional(z.string().url()),
+  bio: z.optional(
+    z
+      .string()
+      .min(3, { message: "Minimum 3 characters." })
+      .max(1000, { message: "Maximum 1000 caracters." }),
+  ),
+  isTwoFactorEnabled: z.optional(z.boolean()),
+  password: z.optional(z.string().min(6)),
+});
 
 export const NewPasswordSchema = z.object({
   password: z.string().min(6, {
@@ -126,5 +110,6 @@ export const SecuritySettingsSchema = z
 
 export type LoginSchemaType = z.infer<typeof LoginSchema>;
 export type RegisterSchemaType = z.infer<typeof RegisterSchema>;
+export type SettingsSchemaType = z.infer<typeof SettingsSchema>;
 export type ProfileSettingSchemaType = z.infer<typeof ProfileSettingSchema>;
 export type SecuritySettingsSchemaType = z.infer<typeof SecuritySettingsSchema>;

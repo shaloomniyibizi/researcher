@@ -3,10 +3,13 @@ import {
   Bot,
   BotMessageSquare,
   Database,
+  PlusSquare,
+  School,
   Server,
   Settings,
   TextSearch,
   University,
+  Users,
 } from "lucide-react";
 
 export const projects = [
@@ -300,43 +303,69 @@ export type StepsType = (typeof STEPS)[number];
 
 export const mainSideBarMenu = [
   {
+    role: "admin,student,faculity",
     title: "Dashboard",
     icon: <University className="transition-all group-hover:scale-110" />,
     href: "/dashboard",
   },
   {
+    role: "student",
     title: "AI Assistant",
     icon: <Bot className="transition-all group-hover:scale-110" />,
     href: "/dashboard/assistant",
   },
   {
+    role: "student",
     title: "Chat with Paper",
     icon: <BotMessageSquare className="transition-all group-hover:scale-110" />,
     href: "/dashboard/chatpdf",
   },
   {
-    title: "Paper Summarizer",
+    role: "admin,student,faculity",
+    title: "Project plagiarism checker",
     icon: <TextSearch className="transition-all group-hover:scale-110" />,
-    href: "/dashboard/summarizer",
+    href: "/dashboard/plagiarism",
   },
   {
+    role: "admin,student,faculity",
     title: "Project",
     icon: <Database className="transition-all group-hover:scale-110" />,
     href: "/dashboard/projects",
   },
   {
+    role: "admin,faculity",
     title: "Repository",
     icon: <Server className="transition-all group-hover:scale-110" />,
     href: "/dashboard/projects/repository",
   },
+  {
+    role: "admin,faculity",
+    title: "User management",
+    icon: <Users className="transition-all group-hover:scale-110" />,
+    href: "/dashboard/users",
+  },
+  {
+    role: "admin,faculity",
+    title: "College management",
+    icon: <School className="transition-all group-hover:scale-110" />,
+    href: "/dashboard/college",
+  },
 ];
 export const sideBarMenu = [
   {
+    role: "student",
+    title: "Add new project",
+    icon: <PlusSquare className="transition-all group-hover:scale-110" />,
+    href: "/dashboard/projects/add",
+  },
+  {
+    role: "admin,student,faculity",
     title: "Settings",
     icon: <Settings className="transition-all group-hover:scale-110" />,
     href: "/dashboard/settings",
   },
   {
+    role: "admin,student,faculity",
     title: "F.Q.A",
     icon: <BadgeHelp className="transition-all group-hover:scale-110" />,
     href: "dashboard/fqa",
@@ -346,9 +375,9 @@ export const sideBarMenu = [
 export type SideBarMenuType = (typeof mainSideBarMenu)[number];
 
 export const StatusIcon = {
-  scheduled: "/assets/icons/check.svg",
+  accepted: "/assets/icons/check.svg",
   pending: "/assets/icons/pending.svg",
-  cancelled: "/assets/icons/cancelled.svg",
+  rejected: "/assets/icons/cancelled.svg",
 };
 
 export const MAX_DATE_RANGE_DAYS = 90;

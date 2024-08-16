@@ -8,10 +8,10 @@ import {
 } from "@prisma/client";
 
 export type ExtendedProject = Project & {
-  user: ExtendedUser;
+  user: DBExtendedUser;
   comments: ExtendedComment[];
 };
-export type ExtendedUser = User & {
+export type DBExtendedUser = User & {
   College: Collage | null;
   Department: Department | null;
   Field: Field | null;

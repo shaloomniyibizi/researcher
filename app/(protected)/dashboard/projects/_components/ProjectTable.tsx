@@ -50,6 +50,7 @@ import RejectProjectDialog from "./RejectProjectDialog";
 interface ProjectTableProps {
   from: Date;
   to: Date;
+  collegeId: string;
 }
 
 const emptyData: any[] = [];
@@ -124,13 +125,13 @@ const columns: ColumnDef<ProjectRow>[] = [
       <div
         className={cn(
           "rounded-lg p-2 text-center capitalize",
-          row.original.user.Department.name === "ICT" &&
+          row.original.user.Department!.name === "ICT" &&
             "bg-emerald-400/10 text-emerald-500",
-          row.original.user.Department.name !== "ICT" &&
+          row.original.user.Department!.name !== "ICT" &&
             "bg-red-400/10 text-red-500",
         )}
       >
-        {row.original.user.Department.name}
+        {row.original.user.Department!.name}
       </div>
     ),
   },
@@ -180,14 +181,18 @@ const csvConfig = mkConfig({
   useKeysAsHeaders: true,
 });
 
-function ProjectTable({ from, to }: ProjectTableProps) {
+function ProjectTable({ from, to, collegeId }: ProjectTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   const { data: project, isLoading } = useQuery<GetAllProjectsType>({
     queryKey: ["repository", "projects", from, to],
     queryFn: async () =>
-      await getAllProjectsByDate(dateToUTCDate(from), dateToUTCDate(to)),
+      await getAllProjectsByDate(
+        dateToUTCDate(from),
+        dateToUTCDate(to),
+        collegeId,
+      ),
   });
 
   const handleExportCSV = (data: any[]) => {
@@ -230,9 +235,9 @@ function ProjectTable({ from, to }: ProjectTableProps) {
   const departmentOptions = useMemo(() => {
     const departmentMap = new Map();
     project?.forEach((project) => {
-      departmentMap.set(project.user.Department.name, {
-        value: project.user.Department.name,
-        label: project.user.Department.name,
+      departmentMap.set(project.user.Department!.name, {
+        value: project.user.Department!.name,
+        label: project.user.Department!.name,
       });
     });
     const uniquDepartment = new Set(departmentMap.values());

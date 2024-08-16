@@ -59,6 +59,7 @@ model User {
   Department            Department?            @relation(fields: [departmentId], references: [id])
   Field                 Field?                 @relation(fields: [fieldId], references: [id])
   Project               Project[]
+  ResearchTopics        ResearchTopics[]
 }
 
 model Account {
@@ -127,18 +128,18 @@ model Department {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   user      User[]
-  College   College[]
-  Field     Field[]
+  college   College[]
+  field     Field[]
 }
 
 model Field {
-  id           String      @id @default(cuid())
+  id           String     @id @default(cuid())
   name         String
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
   user         User[]
-  departmentId String?
-  Department   Department? @relation(fields: [departmentId], references: [id])
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
 }
 
 model Project {
@@ -202,6 +203,7 @@ model CommentVote {
 model Chats {
   id         String     @id @default(cuid())
   pdfName    String
+  fileName   String?
   pdfUrl     String
   pdfContent String?
   createdAt  DateTime   @default(now())
@@ -212,6 +214,21 @@ model Chats {
   userId     String
 }
 
+model ResearchTopics {
+  id               String   @id @default(cuid())
+  title            String
+  description      String?
+  problemStatement String
+  solution         String?
+  objectives       String?
+  feactures        String?
+  conclution       String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id])
+  userId           String
+}
+
 model Messages {
   id        String     @id @default(cuid())
   chatId    String
@@ -219,13 +236,4 @@ model Messages {
   createdAt DateTime   @default(now())
   role      UserSystem
   chat      Chats      @relation(fields: [chatId], references: [id])
-}
-
-model UserSubscriptions {
-  id                     String    @id @default(cuid())
-  userId                 String    @unique
-  stripeCustomerId       String    @unique
-  stripeSubscriptionId   String?   @unique
-  stripePriceId          String?
-  stripeCurrentPeriodEnd DateTime?
 }

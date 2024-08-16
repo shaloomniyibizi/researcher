@@ -35,12 +35,15 @@ export async function POST(req: Request) {
     const systemMessage: ChatCompletionMessage = {
       role: "assistant",
       content:
-        "You are intelligent for answering quetion to the project. you answer the user's question based on the existing project" +
-        "The relavante project for this query are:\n" +
+        "You are an assistant for question-answering tasks." +
+        "Use the following context to answer the question. " +
+        "If the answer is not in the context, say that you don't know." +
+        "keep the answer concise." +
+        "Context:\n" +
         relativeProjects
           .map(
             (project) =>
-              `Title: ${project.title}\n\nDescription:\n${project.description}`,
+              `Title: ${project.title}\n\nDescription:\n${project.description}\n\nProblemStatement:\n${project.challenges}\n\nPossibleSolution:\n${project.results}\n\nObjectives:\n${project.objective}`,
           )
           .join("\n\n"),
     };

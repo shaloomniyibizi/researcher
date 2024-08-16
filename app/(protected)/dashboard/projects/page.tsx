@@ -1,6 +1,13 @@
 import Footer from "@/components/shared/Footer";
-import AIChatButton from "../_components/AIChatButton";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import AIChatBot from "../_components/AIChatBot";
 import { getAllProjects } from "./_actions/project.actions";
+import ChatHeader from "./_components/ChatHeader";
 import Filters from "./_components/Filters";
 import ProjectCard from "./_components/ProjectCard";
 
@@ -18,9 +25,26 @@ async function page() {
               ),
           )}
         </div>
-        <div className="fixed bottom-24 left-8 z-10">
-          <AIChatButton />
-        </div>
+        <Accordion
+          type="single"
+          collapsible
+          className="relative z-40 bg-card shadow"
+        >
+          <AccordionItem value="item-1">
+            <div className="fixed bottom-8 right-8 overflow-hidden rounded-md border border-border bg-card">
+              <div className="flex h-full w-full min-w-80 flex-col">
+                <AccordionTrigger className="border-b border-border bg-card px-6">
+                  <ChatHeader />
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex h-fit flex-col">
+                    <AIChatBot />
+                  </div>
+                </AccordionContent>
+              </div>
+            </div>
+          </AccordionItem>
+        </Accordion>
       </main>
       <Footer />
     </div>

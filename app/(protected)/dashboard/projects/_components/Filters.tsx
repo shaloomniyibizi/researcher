@@ -39,26 +39,6 @@ const Filters = () => {
             <Button variant="outline" size="sm" className="gap-1">
               <ListFilter className="h-3.5 w-3.5" />
               <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                Academic Level
-              </span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Select Academic Level</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuCheckboxItem checked>
-              Undergraduate
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem>Graduate</DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem>Ma</DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem>PhD</DropdownMenuCheckboxItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-1">
-              <ListFilter className="h-3.5 w-3.5" />
-              <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                 Institution
               </span>
             </Button>

@@ -26,7 +26,8 @@ export async function POST(req: Request, res: Response) {
     const addChat = await db.$transaction(async (txt) => {
       const chat = await txt.chats.create({
         data: {
-          fileKey: file_key,
+          fileKey: file_key, 
+          fileName: fileName, 
           pdfName: file_name,
           pdfContent: docs[0].pageContent,
           pdfUrl: getS3(file_key),

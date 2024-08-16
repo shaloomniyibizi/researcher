@@ -191,6 +191,7 @@ const CustomFormField = (props: CustomProps) => {
     <FormField
       control={control}
       name={name}
+      disabled={props.disabled}
       render={({ field }) => (
         <FormItem className="w-full flex-1">
           {props.fieldType !== FormFieldType.CHECKBOX && label && (
