@@ -21,38 +21,25 @@ const ChatComponent = ({ id }: Props) => {
     },
   });
 
-  const {
-    messages,
-    input,
-    handleInputChange,
-    handleSubmit,
-    setMessages,
-    isLoading,
-    error,
-  } = useChat({
-    api: "/api/chat",
-    body: {
-      id,
-    },
-    initialMessages: data || [],
-  });
+  const { messages, input, handleInputChange, handleSubmit, isLoading, error } =
+    useChat({
+      api: "/api/chat",
+      body: {
+        id,
+      },
+      initialMessages: data || [],
+    });
   const inputRef = useRef<HTMLInputElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
-
-  useEffect(() => {
-    const messageContainer = document.getElementById("message-container");
-    if (messageContainer) {
-      messageContainer.scrollTo({
-        top: messageContainer.scrollHeight,
-        behavior: "smooth",
-      });
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+  inputRef.current?.focus();
   return (
-    <div className="relative h-[calc(100vh-3.7rem)]" id="message-container">
+    <div className="relative h-[calc(100vh-3.7rem)]" ref={scrollRef}>
       {/* header */}
       <div className="sticky inset-x-0 top-0 h-fit p-2">
         <h3 className="text-xl font-bold">Chat</h3>

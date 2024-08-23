@@ -24,7 +24,7 @@ function ProjectPageWrapper() {
     to: new Date(),
   });
   const user = useCurrentUser();
-  const { data: dbUser, isFetching } = useQuery({
+  const { data: dbUser } = useQuery({
     queryKey: ["projects"],
     queryFn: async () => await db.user.findFirst({ where: { id: user?.id } }),
   });

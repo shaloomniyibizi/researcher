@@ -1,7 +1,10 @@
-import { getAccountByUserId, getUserById } from "@/lib/data/user.actions";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { Role } from "@prisma/client";
 import NextAuth from "next-auth";
+import {
+  getAccountByUserId,
+  getUserById,
+} from "./app/(protected)/dashboard/users/_actions/user.actions";
 import authConfig from "./lib/config/auth.config";
 import { getTwoFactorConfirmationByUserId } from "./lib/data/token.actions";
 import db from "./lib/db";

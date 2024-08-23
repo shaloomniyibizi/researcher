@@ -45,9 +45,9 @@ const AccountSettings = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Profile Settings</CardTitle>
+        <CardTitle>Account Settings</CardTitle>
         <CardDescription>
-          Used to identify your store in the marketplace.
+          update your Account information to secure your account.
         </CardDescription>
       </CardHeader>
       <CardContent>

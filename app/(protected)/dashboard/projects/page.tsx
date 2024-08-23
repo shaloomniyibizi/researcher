@@ -1,30 +1,30 @@
-import Footer from "@/components/shared/Footer";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { currentUser } from "@/lib/userAuth";
+import { redirect } from "next/navigation";
 import AIChatBot from "../_components/AIChatBot";
-import { getAllProjects } from "./_actions/project.actions";
+import { getUserById } from "../users/_actions/user.actions";
+import { getProjectMessageByUserId } from "./_actions/projectMessage.actions";
 import ChatHeader from "./_components/ChatHeader";
-import Filters from "./_components/Filters";
 import ProjectCard from "./_components/ProjectCard";
-
 async function page() {
-  const projects = await getAllProjects();
+  const user = await currentUser();
+  if (!user) redirect("/login");
+  const dbUser = await getUserById(user.id!);
+  if (!dbUser?.onboarded) redirect("/onboarding");
+
+  const promessage = await getProjectMessageByUserId(dbUser.id);
+
   return (
     <div className="flex min-h-[calc(100vh-3.6rem)] flex-col">
       <main className="min-h-screen flex-1">
-        <Filters />
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 py-6 sm:grid-cols-2 sm:px-6 lg:grid-cols-3 lg:px-8">
-          {projects.map(
-            (project) =>
-              project.status === "accepted" && (
-                <ProjectCard key={project.title} project={project} />
-              ),
-          )}
-        </div>
+        {/* <Filters /> */}
+
+        <ProjectCard />
         <Accordion
           type="single"
           collapsible
@@ -46,7 +46,7 @@ async function page() {
           </AccordionItem>
         </Accordion>
       </main>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }

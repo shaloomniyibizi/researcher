@@ -1,6 +1,5 @@
 "use server";
 
-import { getUserById } from "@/lib/data/user.actions";
 import db from "@/lib/db";
 import { CachedProject } from "@/lib/types/redis";
 import { currentUser } from "@/lib/userAuth";
@@ -15,6 +14,7 @@ import { z } from "zod";
 const CACHE_AFTER_UPVOTES = 1;
 
 import { Redis } from "@upstash/redis";
+import { getUserById } from "../../users/_actions/user.actions";
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL,

@@ -17,7 +17,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -25,17 +24,19 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
+import CustomFormField, {
+  FormFieldType,
+} from "@/components/shared/CustomFormField";
+import { SelectItem } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { getUserById } from "@/lib/data/user.actions";
-import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { fieldSchema, fieldSchemaType } from "@/lib/validations/college";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Field } from "@prisma/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { PlusSquare } from "lucide-react";
+import { Loader2, PlusSquare } from "lucide-react";
 import { toast } from "react-toastify";
+import { getDepartments } from "../_actions/department.actions";
 import { CreateField } from "../_actions/field.actions";
-import DepartmentPicker from "./DepartmentPicker";
 
 interface FieldDialogProps {
   trigger?: ReactNode;
@@ -43,11 +44,6 @@ interface FieldDialogProps {
 
 function FieldDialog({ trigger }: FieldDialogProps) {
   const [open, setOpen] = React.useState(false);
-  const user = useCurrentUser();
-  const { data: dbUser, isFetching } = useQuery({
-    queryKey: ["users"],
-    queryFn: async () => await getUserById(user?.id!),
-  });
 
   const form = useForm<fieldSchemaType>({
     resolver: zodResolver(fieldSchema),
@@ -57,12 +53,10 @@ function FieldDialog({ trigger }: FieldDialogProps) {
     },
   });
 
-  const handleDepartmentChange = useCallback(
-    (value: string) => {
-      form.setValue("departmentId", value);
-    },
-    [form],
-  );
+  const { data: departments } = useQuery({
+    queryKey: ["departments"],
+    queryFn: async () => await getDepartments(),
+  });
 
   const queryClient = useQueryClient();
 
@@ -77,7 +71,7 @@ function FieldDialog({ trigger }: FieldDialogProps) {
       toast.success(`Field ${data.name} created successfully 👍`);
 
       await queryClient.invalidateQueries({
-        queryKey: ["categories"],
+        queryKey: ["colleges"],
       });
 
       setOpen((prev) => !prev);
@@ -91,6 +85,7 @@ function FieldDialog({ trigger }: FieldDialogProps) {
   const onSubmit = useCallback(
     (values: fieldSchemaType) => {
       mutate(values);
+      console.log(values);
     },
     [mutate],
   );
@@ -133,25 +128,20 @@ function FieldDialog({ trigger }: FieldDialogProps) {
                 </FormItem>
               )}
             />
-            <FormField
+            <CustomFormField
+              fieldType={FormFieldType.SELECT}
               control={form.control}
               name="departmentId"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel className="sr-only">Category</FormLabel>
-                  <FormControl>
-                    <DepartmentPicker
-                      collegeId={dbUser?.collegeId!}
-                      onChange={handleDepartmentChange}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                  <FormDescription>
-                    Select Department for this Field
-                  </FormDescription>
-                </FormItem>
-              )}
-            />
+              placeholder="Select Department"
+              label="Department"
+              disabled={isPending}
+            >
+              {departments?.map((department, i) => (
+                <SelectItem key={department.name + i} value={department.id}>
+                  <p>{department.name}</p>
+                </SelectItem>
+              ))}
+            </CustomFormField>
           </form>
         </Form>
         <DialogFooter>
@@ -171,7 +161,7 @@ function FieldDialog({ trigger }: FieldDialogProps) {
             disabled={isPending}
             isLoading={isPending}
           >
-            {!isPending && "Create Field"}
+            {isPending ? <Loader2 className="animate-spin" /> : "Create Field"}
           </Button>
         </DialogFooter>
       </DialogContent>

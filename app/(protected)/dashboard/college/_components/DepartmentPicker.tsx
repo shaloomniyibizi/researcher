@@ -18,7 +18,7 @@ import { Department } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getDepartmentsByCollegeId } from "../_actions/department.actions";
+import { getDepartments } from "../_actions/department.actions";
 import DepartmentDialog from "./DepartmentDialog";
 
 interface DepartmentPickerProps {
@@ -37,7 +37,7 @@ function DepartmentPicker({ collegeId, onChange }: DepartmentPickerProps) {
 
   const departmentsQuery = useQuery({
     queryKey: ["departments", collegeId],
-    queryFn: async () => getDepartmentsByCollegeId(collegeId),
+    queryFn: async () => getDepartments(),
   });
 
   const selectedDepartment = departmentsQuery.data?.find(

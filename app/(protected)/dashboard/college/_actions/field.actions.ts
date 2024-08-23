@@ -19,7 +19,11 @@ export async function CreateField(form: fieldSchemaType) {
   return await db.field.create({
     data: {
       name,
-      departmentId,
+      department: {
+        connect: {
+          id: departmentId,
+        },
+      },
     },
   });
 }

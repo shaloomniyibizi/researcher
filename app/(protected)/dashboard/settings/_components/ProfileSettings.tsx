@@ -29,11 +29,12 @@ import {
 } from "@/lib/validations/user";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { User } from "@prisma/client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ImageIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ChangeEvent, useState, useTransition } from "react";
+import { ChangeEvent, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
@@ -42,12 +43,52 @@ interface Props {
 }
 const ProfileSettingsForm = ({ user }: Props) => {
   const { update } = useSession();
-  const [isPending, startTransition] = useTransition();
+  // const [isPending, startTransition] = useTransition();
 
   const router = useRouter();
   const { startUpload } = useUploadThing("imageUploader");
 
   const [files, setFiles] = useState<File[]>([]);
+
+  const queryClient = useQueryClient();
+
+  const { mutate: profileSettings, isPending } = useMutation({
+    mutationFn: async (values: ProfileSettingSchemaType) => {
+      const blob = values.image as string;
+      const hasImageChanged = isBase64Image(blob);
+      if (hasImageChanged) {
+        const imgRes = await startUpload(files);
+
+        if (imgRes && imgRes[0].url) {
+          values.image = imgRes[0].url;
+        }
+      }
+      console.log(values);
+      return await ProfileSetting(values);
+    },
+    onSuccess: (data) => {
+      if (data.error) {
+        toast.error(data.error);
+      }
+
+      if (data.success) {
+        update();
+        router.refresh();
+        toast.success(data.success);
+        router.back();
+      }
+
+      // After creating a transaction, we need to invalidate the overview query which will fetch data in the home page
+      queryClient.invalidateQueries({
+        queryKey: ["dashboard", "users"],
+      });
+    },
+
+    onError: (e) => {
+      toast.loading(`Error: ${e.message}`);
+    },
+  });
+
   // 1. Define your form.
   const form = useForm<ProfileSettingSchemaType>({
     resolver: zodResolver(ProfileSettingSchema),
@@ -62,33 +103,7 @@ const ProfileSettingsForm = ({ user }: Props) => {
 
   // 2. Define a submit handler.
   function onSubmit(values: ProfileSettingSchemaType) {
-    startTransition(async () => {
-      const blob = values.image as string;
-      const hasImageChanged = isBase64Image(blob);
-      if (hasImageChanged) {
-        const imgRes = await startUpload(files);
-
-        if (imgRes && imgRes[0].url) {
-          values.image = imgRes[0].url;
-        }
-      }
-      console.log(values);
-
-      ProfileSetting(values)
-        .then((data) => {
-          if (data.error) {
-            toast.error(data.error);
-          }
-
-          if (data.success) {
-            update();
-            router.refresh();
-            toast.success(data.success);
-            router.back();
-          }
-        })
-        .catch(() => toast.error("Something went wrong!"));
-    });
+    profileSettings(values);
   }
   const handleImage = (
     e: ChangeEvent<HTMLInputElement>,
@@ -119,7 +134,7 @@ const ProfileSettingsForm = ({ user }: Props) => {
           <CardHeader>
             <CardTitle>Profile Settings</CardTitle>
             <CardDescription>
-              Used to identify your store in the marketplace.
+              update your Profile information to secure your account.
             </CardDescription>
           </CardHeader>
           <CardContent>

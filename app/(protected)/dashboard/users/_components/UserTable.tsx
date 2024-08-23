@@ -21,7 +21,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getUsersByColleId, GetUsersType } from "@/lib/actions/user.actions";
 import { cn, dateToUTCDate } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -45,6 +44,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { getUsersByColleId, GetUsersType } from "../_actions/user.actions";
 import DeleteUserDialog from "./DeleteUserDialog";
 import EditUserDialog from "./EditUserDialog";
 

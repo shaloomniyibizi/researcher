@@ -28,7 +28,7 @@ import { ImageIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ChangeEvent, useState, useTransition } from "react";
+import { ChangeEvent, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
@@ -38,7 +38,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { DBExtendedUser } from "@/lib/types/db";
 import { SettingsSchema, SettingsSchemaType } from "@/lib/validations/user";
 import { Role } from "@prisma/client";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getColleges } from "../../college/_actions/collage.actions";
 import { getDepartments } from "../../college/_actions/department.actions";
 import { getFields } from "../../college/_actions/field.actions";
@@ -46,7 +46,7 @@ import { settings } from "../_actions/settings.actions";
 
 const AddFaculityForm = ({ user }: { user?: DBExtendedUser }) => {
   const { update } = useSession();
-  const [isPending, startTransition] = useTransition();
+  // const [isPending, startTransition] = useTransition();
 
   const router = useRouter();
   const { startUpload } = useUploadThing("imageUploader");
@@ -64,6 +64,45 @@ const AddFaculityForm = ({ user }: { user?: DBExtendedUser }) => {
   const { data: fields } = useQuery({
     queryKey: ["fields"],
     queryFn: async () => await getFields(),
+  });
+
+  const queryClient = useQueryClient();
+
+  const { mutate: AddFaculity, isPending } = useMutation({
+    mutationFn: async (values: SettingsSchemaType) => {
+      const blob = values.image as string;
+      const hasImageChanged = isBase64Image(blob);
+      if (hasImageChanged) {
+        const imgRes = await startUpload(files);
+
+        if (imgRes && imgRes[0].url) {
+          values.image = imgRes[0].url;
+        }
+      }
+      console.log(values);
+      return await settings(values);
+    },
+    onSuccess: (data) => {
+      if (data.error) {
+        toast.error(data.error);
+      }
+
+      if (data.success) {
+        update();
+        router.refresh();
+        toast.success(data.success);
+        router.back();
+      }
+
+      // After creating a transaction, we need to invalidate the overview query which will fetch data in the home page
+      queryClient.invalidateQueries({
+        queryKey: ["dashboard", "users"],
+      });
+    },
+
+    onError: (e) => {
+      toast.loading(`Error: ${e.message}`);
+    },
   });
 
   // 1. Define your form.
@@ -87,36 +126,7 @@ const AddFaculityForm = ({ user }: { user?: DBExtendedUser }) => {
 
   // 2. Define a submit handler.
   function onSubmit(values: SettingsSchemaType) {
-    startTransition(async () => {
-      const blob = values.image as string;
-      const hasImageChanged = isBase64Image(blob);
-      if (hasImageChanged) {
-        const imgRes = await startUpload(files);
-
-        if (imgRes && imgRes[0].url) {
-          values.image = imgRes[0].url;
-        }
-      }
-      console.log(values);
-
-      settings(values)
-        .then((data) => {
-          if (data.error) {
-            toast.error(data.error);
-          }
-
-          if (data.success) {
-            update();
-            router.refresh();
-            toast.success(data.success);
-            router.back();
-          }
-        })
-        .catch((error) => {
-          console.error(`Something went wrong!${error}`);
-          toast.error("Something went wrong!");
-        });
-    });
+    AddFaculity(values);
   }
   const handleImage = (
     e: ChangeEvent<HTMLInputElement>,
@@ -152,7 +162,7 @@ const AddFaculityForm = ({ user }: { user?: DBExtendedUser }) => {
               ⚙️ Settings
             </CardTitle>
             <CardDescription>
-              Used to identify your store in the marketplace.
+              update your Account information to secure your account.
             </CardDescription>
           </CardHeader>
           <CardContent>

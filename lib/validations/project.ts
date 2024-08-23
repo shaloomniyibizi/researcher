@@ -32,4 +32,14 @@ export const ProjectSchema = z.object({
   pdf: z.string().optional(),
   codeLink: z.string().url("Must be a valid URL").optional(),
 });
+export const GeneratedProjectSchema = z.object({
+  title: z.string(),
+  description: z.string().optional(),
+  objectives: z.string().optional(),
+  problemStatement: z.string(),
+  solution: z.string().optional(),
+  conclution: z.string().optional(),
+  feactures: z.string().optional(),
+});
 export type ProjectSchemaType = z.infer<typeof ProjectSchema>;
+export type GeneratedProjectSchemaType = z.infer<typeof GeneratedProjectSchema>;

@@ -1,12 +1,21 @@
 "use server";
 
-import { getProjectByTitle } from "@/lib/data/project.actions";
 import db from "@/lib/db";
 import { projectIndex } from "@/lib/newPinecone";
 import { getEmbeddings } from "@/lib/openai";
 import { currentUser } from "@/lib/userAuth";
 import { ProjectSchema, ProjectSchemaType } from "@/lib/validations/project";
 import { redirect } from "next/navigation";
+
+export const getProjectByTitle = async (title: string) => {
+  try {
+    const project = await db.project.findFirst({ where: { title } });
+
+    return project;
+  } catch {
+    return null;
+  }
+};
 
 export const addProject = async (values: ProjectSchemaType) => {
   const validatedFields = ProjectSchema.safeParse(values);
@@ -293,6 +302,30 @@ export async function RejectProject(id: string) {
 
 export async function GetaNumberOfProjects() {
   const count = await db.project.count();
+  return count;
+}
+export async function GetaNumberOfAcceptedProjects() {
+  const count = await db.project.count({
+    where: {
+      status: "accepted",
+    },
+  });
+  return count;
+}
+export async function GetaNumberOfRejectedProjects() {
+  const count = await db.project.count({
+    where: {
+      status: "rejected",
+    },
+  });
+  return count;
+}
+export async function GetaNumberOfPendingProjects() {
+  const count = await db.project.count({
+    where: {
+      status: "pedding",
+    },
+  });
   return count;
 }
 

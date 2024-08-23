@@ -2,7 +2,6 @@ import { cn } from "@/lib/utils";
 import type { Messages as NewMessage } from "@prisma/client";
 import { Message } from "ai/react";
 import { Bot, Loader2 } from "lucide-react";
-import { useEffect, useRef } from "react";
 import UserAvatar from "../../_components/UserAvatar";
 
 type Props = {
@@ -13,13 +12,6 @@ type Props = {
 };
 
 const MessageList = ({ messages, isLoading, error, isThinking }: Props) => {
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
   const lastMessageIsUser = messages[messages.length - 1]?.role === "user";
   if (isLoading) {
     return (
@@ -30,7 +22,7 @@ const MessageList = ({ messages, isLoading, error, isThinking }: Props) => {
   }
   if (!messages) return <p>ask any question related to this paper</p>;
   return (
-    <div className="mt-4 h-full overflow-y-auto px-3" ref={scrollRef}>
+    <div className="mt-4 h-full overflow-y-auto px-3">
       {messages.map((message) => (
         <ChatMessage message={message} key={message.id} />
       ))}

@@ -37,7 +37,7 @@ model User {
   name                  String
   email                 String                 @unique
   emailVerified         DateTime?
-  password              String
+  password              String?
   role                  Role                   @default(STUDENT)
   image                 String?
   phoneNumber           String?
@@ -60,6 +60,7 @@ model User {
   Field                 Field?                 @relation(fields: [fieldId], references: [id])
   Project               Project[]
   ResearchTopics        ResearchTopics[]
+  Promessages           Promessages[]
 }
 
 model Account {
@@ -236,4 +237,14 @@ model Messages {
   createdAt DateTime   @default(now())
   role      UserSystem
   chat      Chats      @relation(fields: [chatId], references: [id])
+}
+
+model Promessages {
+  id        String     @id @default(cuid())
+  content   String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  role      UserSystem
+  user      User       @relation(fields: [userId], references: [id])
+  userId    String
 }

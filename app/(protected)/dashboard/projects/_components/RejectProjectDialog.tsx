@@ -31,7 +31,7 @@ function RejectProjectDialog({
       toast.success(data.success);
 
       queryClient.invalidateQueries({
-        queryKey: ["repository", "projects"],
+        queryKey: ["rejectedProject", "projects"],
       });
     },
     onError: (error) => {

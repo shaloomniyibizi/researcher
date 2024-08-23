@@ -1,10 +1,10 @@
 "use server";
 
-import { getUserByEmail } from "@/lib/data/user.actions";
 import db from "@/lib/db";
 import { currentUser } from "@/lib/userAuth";
 import { SettingsSchema, SettingsSchemaType } from "@/lib/validations/user";
 import bcrypt from "bcryptjs";
+import { getUserByEmail } from "./user.actions";
 
 export const settings = async (values: SettingsSchemaType) => {
   const validatedFields = SettingsSchema.safeParse(values);
@@ -38,7 +38,24 @@ export const settings = async (values: SettingsSchemaType) => {
   const dbUser = await getUserByEmail(email!);
 
   if (!dbUser) {
-    return { error: "this user not exist anymore" };
+    await db.user.create({
+      data: {
+        departmentId,
+        collegeId,
+        bio,
+        email: email!,
+        image,
+        name: name!,
+        phoneNumber,
+        onboarded,
+        fieldId,
+        password: hashedPassword,
+        role,
+        isTwoFactorEnabled,
+        emailVerified: new Date(), // manual email verification
+      },
+    });
+    return { success: "User Added Successfully" };
   }
 
   if (user.isOAuth) {
@@ -46,9 +63,9 @@ export const settings = async (values: SettingsSchemaType) => {
   }
 
   // update user
-  await db.user.upsert({
+  await db.user.update({
     where: { id: dbUser.id },
-    update: {
+    data: {
       departmentId,
       collegeId,
       bio,
@@ -63,22 +80,7 @@ export const settings = async (values: SettingsSchemaType) => {
       isTwoFactorEnabled,
       emailVerified: new Date(), // manual email verification
     },
-    create: {
-      departmentId,
-      collegeId,
-      bio,
-      email: email!,
-      image,
-      name: name!,
-      phoneNumber,
-      onboarded,
-      fieldId,
-      password: hashedPassword,
-      role,
-      isTwoFactorEnabled,
-      emailVerified: new Date(), // manual email verification
-    },
   });
 
-  return { success: "Successfully onboarded !" };
+  return { success: "User Updated Successfully !" };
 };

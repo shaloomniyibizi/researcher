@@ -10,9 +10,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { DeleteUser } from "@/lib/actions/user.actions";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import { DeleteUser } from "../_actions/user.actions";
 
 interface DeleteUserDialogProps {
   open: boolean;
@@ -48,9 +48,6 @@ function DeleteUserDialog({ open, setOpen, userId }: DeleteUserDialogProps) {
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={() => {
-              // toast.success("Deleting User....  ", {
-              //   id: userId,
-              // });
               deleteMutation.mutate(userId);
             }}
           >

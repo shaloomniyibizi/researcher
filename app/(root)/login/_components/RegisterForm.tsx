@@ -1,8 +1,7 @@
 "use client";
 import Link from "next/link";
 
-import { FormError } from "@/components/forms/FormError";
-import { FormSuccess } from "@/components/forms/FormSuccess";
+import { register } from "@/app/(protected)/dashboard/users/_actions/user.actions";
 import CustomFormField, {
   FormFieldType,
 } from "@/components/shared/CustomFormField";
@@ -17,17 +16,35 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
-import { register } from "@/lib/actions/register.actions";
 import { RegisterSchema, RegisterSchemaType } from "@/lib/validations/user";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { BeatLoader } from "react-spinners";
 import { toast } from "react-toastify";
 const RegisterForm = () => {
-  const [error, setError] = React.useState<string | undefined>("");
-  const [success, setSuccess] = React.useState<string | undefined>("");
-  const [isPending, startTransition] = React.useTransition();
+  const queryClient = useQueryClient();
+  const { mutate: registerUser, isPending } = useMutation({
+    mutationFn: register,
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success("User Registered Successfully 👍");
+      } else {
+        toast.success(data.error);
+      }
+
+      form.reset();
+
+      // After creating a transaction, we need to invalidate the overview query which will fetch data in the home page
+      queryClient.invalidateQueries({
+        queryKey: ["dashboard", "users"],
+      });
+    },
+
+    onError: (e) => {
+      toast.loading(`Error: ${e.message}`);
+    },
+  });
 
   // 1. Define your form.
   const form = useForm<RegisterSchemaType>({
@@ -42,21 +59,7 @@ const RegisterForm = () => {
 
   // 2. Define a submit handler.
   function onSubmit(values: RegisterSchemaType) {
-    startTransition(() => {
-      register(values)
-        .then((data) => {
-          if (data?.error) {
-            toast.error(data.error);
-            setError(data.error);
-          }
-
-          if (data?.success) {
-            form.reset();
-            toast.success(data.success);
-          }
-        })
-        .catch(() => toast.error("Something went wrong"));
-    });
+    registerUser(values);
   }
   return (
     <Card>
@@ -117,8 +120,6 @@ const RegisterForm = () => {
               autoComplete="none"
               autoCorrect="off"
             />
-            <FormError message={error} />
-            <FormSuccess message={success} />
             <Button disabled={isPending} type="submit" className="mt-4 w-full">
               {isPending ? <BeatLoader /> : "Register"}
             </Button>

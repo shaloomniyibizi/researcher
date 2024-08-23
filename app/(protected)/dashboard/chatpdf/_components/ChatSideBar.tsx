@@ -5,17 +5,13 @@ import { cn } from "@/lib/utils";
 import { Chats } from "@prisma/client";
 import { MessageCircle, PlusCircle } from "lucide-react";
 import Link from "next/link";
-import React from "react";
 
 type Props = {
   chats: Chats[];
   id: string;
-  isPro?: boolean;
 };
 
-const ChatSideBar = ({ chats, id, isPro }: Props) => {
-  const [loading, setLoading] = React.useState(false);
-
+const ChatSideBar = ({ chats, id }: Props) => {
   return (
     <div className="soff h-full w-full bg-card p-4 text-card-foreground">
       <Link href="/dashboard/chatpdf">

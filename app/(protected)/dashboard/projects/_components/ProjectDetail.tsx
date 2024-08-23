@@ -9,7 +9,6 @@ import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { ExtendedProject } from "@/lib/types/db";
 import { cn, dateToUTCDate } from "@/lib/utils";
 import { Download, Heart, Star } from "lucide-react";
-import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -29,11 +28,6 @@ const ProjectDetail = ({ project }: ProjectProps) => {
 
   return (
     <div>
-      <Head>
-        <title>{project.title} | Smart Research</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
       <main className="mx-auto max-w-7xl px-4 py-8">
         <section className="flex flex-col gap-8 md:flex-row">
           <div className="h-full lg:flex-shrink-0">

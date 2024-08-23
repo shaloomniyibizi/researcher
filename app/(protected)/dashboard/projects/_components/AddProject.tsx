@@ -24,17 +24,17 @@ import { useUploadThing } from "@/lib/uploadthing";
 import { cn, isBase64Image, isBase64PDF } from "@/lib/utils";
 import { ProjectSchema, ProjectSchemaType } from "@/lib/validations/project";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ImageIcon, Text } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ChangeEvent, startTransition, useState } from "react";
+import { ChangeEvent, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { addProject } from "../_actions/project.actions";
 import Steps from "./Steps";
 
 const AddProject = () => {
-  const [isLoading, setIsLoading] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [pdfUrl, setPdfUrl] = useState<File[]>([]);
   const [step, setStep] = useState(1);
@@ -43,27 +43,11 @@ const AddProject = () => {
   const newImage = useUploadThing("imageUploader");
   const newPDF = useUploadThing("pdfUploader");
   const router = useRouter();
-  // 1. Define your form.
-  const form = useForm<ProjectSchemaType>({
-    resolver: zodResolver(ProjectSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      image: "",
-      objective: "",
-      technologies: "",
-      methodology: "",
-      challenges: "",
-      results: "",
-      pdf: "",
-      codeLink: "",
-    },
-  });
 
-  // 2. Define a submit handler.
-  function onSubmit(values: ProjectSchemaType) {
-    setIsLoading(true);
-    startTransition(async () => {
+  const queryClient = useQueryClient();
+
+  const { mutate: addNewProject, isPending } = useMutation({
+    mutationFn: async (values: ProjectSchemaType) => {
       const blob = values.image as string;
       const pdf = values.pdf as string;
       const hasImageChanged = isBase64Image(blob);
@@ -83,26 +67,92 @@ const AddProject = () => {
         }
       }
       console.log(values);
-      addProject(values)
-        .then((data) => {
-          if (data?.error) {
-            form.reset();
-            setIsLoading(false);
-            toast.error(data.error);
-          }
 
-          if (data?.success) {
-            form.reset();
-            setIsLoading(false);
-            toast.success(data.success);
-            router.back();
-          }
-        })
-        .catch((error) => {
-          console.error(`Something went wrong! ${error}`);
-          toast.error(`Something went wrong!`);
-        });
-    });
+      return await addProject(values);
+    },
+    onSuccess: (data) => {
+      if (data?.error) {
+        form.reset();
+        toast.error(data.error);
+      }
+
+      if (data?.success) {
+        form.reset();
+        toast.success(data.success);
+        router.back();
+      }
+
+      // After creating a transaction, we need to invalidate the overview query which will fetch data in the home page
+      queryClient.invalidateQueries({
+        queryKey: ["dashboard", "projects"],
+      });
+    },
+
+    onError: (e) => {
+      toast.loading(`Error: ${e.message}`);
+    },
+  });
+
+  // 1. Define your form.
+  const form = useForm<ProjectSchemaType>({
+    resolver: zodResolver(ProjectSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      image: "",
+      objective: "",
+      technologies: "",
+      methodology: "",
+      challenges: "",
+      results: "",
+      pdf: "",
+      codeLink: "",
+    },
+  });
+
+  // 2. Define a submit handler.
+  function onSubmit(values: ProjectSchemaType) {
+    addNewProject(values);
+    // startTransition(async () => {
+    //   const blob = values.image as string;
+    //   const pdf = values.pdf as string;
+    //   const hasImageChanged = isBase64Image(blob);
+    //   const hasPdfChanged = isBase64PDF(pdf);
+    //   if (hasImageChanged) {
+    //     const { startUpload } = newImage;
+    //     const imgRes = await startUpload(files);
+    //     if (imgRes && imgRes[0].url) {
+    //       values.image = imgRes[0].url;
+    //     }
+    //   }
+    //   if (hasPdfChanged) {
+    //     const { startUpload } = newPDF;
+    //     const pdfRes = await startUpload(pdfUrl);
+    //     if (pdfRes && pdfRes[0].url) {
+    //       values.pdf = pdfRes[0].url;
+    //     }
+    //   }
+    //   console.log(values);
+    //   addProject(values)
+    //     .then((data) => {
+    //       if (data?.error) {
+    //         form.reset();
+    //         setIsLoading(false);
+    //         toast.error(data.error);
+    //       }
+
+    //       if (data?.success) {
+    //         form.reset();
+    //         setIsLoading(false);
+    //         toast.success(data.success);
+    //         router.back();
+    //       }
+    //     })
+    //     .catch((error) => {
+    //       console.error(`Something went wrong! ${error}`);
+    //       toast.error(`Something went wrong!`);
+    //     });
+    // });
   }
 
   const handleImage = (
@@ -151,19 +201,21 @@ const AddProject = () => {
   };
 
   return (
-    <main className="grid items-start gap-4 px-4 py-8 sm:px-6 md:gap-8 md:pt-0">
+    <main className="grid items-start gap-4 overflow-x-clip px-4 py-8 sm:px-6 md:gap-8 md:pt-0">
       <div className="sticky top-14 hidden md:block">
         <Steps STEPS={STEPS} />
       </div>
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto flex h-full min-h-[calc(100vh-13rem)] min-w-full max-w-5xl flex-col items-center justify-center">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <div className="grid gap-8 md:grid-cols-3">
               {step === 1 && (
-                <Card>
+                <Card className="w-full">
                   <CardHeader>
                     <CardTitle>Product Images</CardTitle>
-                    <CardDescription>Lipsum dolor sit amet,</CardDescription>
+                    <CardDescription>
+                      Add project image to identify your work
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <FormField
@@ -206,11 +258,12 @@ const AddProject = () => {
                   step === 1 ? "md:col-span-2" : "w-full md:col-span-3",
                 )}
               >
-                <Card>
+                <Card className="w-full max-w-3xl">
                   <CardHeader>
                     <CardTitle>Product Details</CardTitle>
                     <CardDescription>
-                      Lipsum dolor sit amet, consectetur adipiscing elit
+                      Add more details to your project such as title and
+                      describtions
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-4 sm:gap-8">
@@ -369,7 +422,7 @@ const AddProject = () => {
                 </Button>
               )}
               {step === 4 && (
-                <SubmitButton isLoading={isLoading} className="w-fit rounded">
+                <SubmitButton isLoading={isPending} className="w-fit rounded">
                   Add Project
                 </SubmitButton>
               )}

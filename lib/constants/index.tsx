@@ -271,29 +271,29 @@ export type ProjectData = (typeof projects)[number];
 
 export const STEPS = [
   {
-    name: "Step 1: Basic Information",
-    description: "Choose an image for your case",
+    name: "Step 1: Project descriptions",
+    description: "upload project image, title and description",
     isCompleted: false,
     isCurrent: false,
     imgPath: <Bot />,
   },
   {
     name: "Step 2: Project Details",
-    description: "Make the case yours",
+    description: "Add objectives, technology used and methodology",
     isCompleted: false,
     imgPath: <Bot />,
     isCurrent: false,
   },
   {
     name: "Step 3: Challenges and Results",
-    description: "Review your final design",
+    description: "Add Problem statement and Possible solution",
     isCompleted: false,
     isCurrent: false,
     imgPath: <Bot />,
   },
   {
     name: "Step 4: Additional Information",
-    description: "Well done",
+    description: "Add project report(pdf) and your codeLink",
     isCompleted: false,
     isCurrent: false,
     imgPath: <Bot />,

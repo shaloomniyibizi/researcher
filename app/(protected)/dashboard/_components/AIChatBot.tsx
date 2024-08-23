@@ -1,13 +1,41 @@
 "use client";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { cn } from "@/lib/utils";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Message, useChat } from "ai/react";
-import { Bot, Trash } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { Bot, Send, Trash } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "react-toastify";
+import {
+  deleteProjectMessageByUserId,
+  getProjectMessageByUserId,
+} from "../projects/_actions/projectMessage.actions";
 import UserAvatar from "./UserAvatar";
 
+interface Props {
+  data?: Message[];
+}
 const AIChatBot = () => {
+  const [open, setOpen] = useState(false);
+  const user = useCurrentUser();
+
+  const { data } = useQuery({
+    queryKey: ["chat"],
+    queryFn: async () => await getProjectMessageByUserId(user?.id!),
+  });
+
   const {
     messages,
     input,
@@ -16,7 +44,22 @@ const AIChatBot = () => {
     setMessages,
     isLoading,
     error,
-  } = useChat({ api: "/api/aichat" });
+  } = useChat({ api: "/api/aichat", initialMessages: data || [] });
+
+  const queryClient = useQueryClient();
+  const deleteMutation = useMutation({
+    mutationFn: deleteProjectMessageByUserId,
+    onSuccess: async (data) => {
+      toast.success(data.success);
+      setMessages([]);
+      queryClient.invalidateQueries({
+        queryKey: ["chat"],
+      });
+    },
+    onError: (error) => {
+      toast.success(error.message);
+    },
+  });
 
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -26,9 +69,7 @@ const AIChatBot = () => {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
+  inputRef.current?.focus();
 
   const lastMessageIsUser = messages[messages.length - 1]?.role === "user";
 
@@ -69,7 +110,7 @@ const AIChatBot = () => {
             size={"icon"}
             className="shrink-0"
             type="button"
-            onClick={() => setMessages([])}
+            onClick={() => setOpen(true)}
           >
             <Trash />
           </Button>
@@ -79,9 +120,31 @@ const AIChatBot = () => {
             placeholder="Say same thing..."
             ref={inputRef}
           />
-          <Button type="submit">Send</Button>
+          <Button type="submit">
+            <Send className="h-4 w-4" />
+          </Button>
         </form>
       </div>
+      <AlertDialog open={open} onOpenChange={setOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action can not undone. This will permenently delete this chat
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                deleteMutation.mutate(user?.id!);
+              }}
+            >
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

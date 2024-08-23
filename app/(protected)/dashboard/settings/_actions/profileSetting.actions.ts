@@ -1,11 +1,11 @@
 "use server";
 
-import { getUserByEmail, getUserById } from "@/lib/data/user.actions";
+import db from "@/lib/db";
 import { sendVerificationEmail } from "@/lib/emails";
+import { generateVerificationToken } from "@/lib/tokens";
 import { currentUser } from "@/lib/userAuth";
-import db from "../../../../../lib/db";
-import { generateVerificationToken } from "../../../../../lib/tokens";
-import { ProfileSettingSchemaType } from "../../../../../lib/validations/user";
+import { ProfileSettingSchemaType } from "@/lib/validations/user";
+import { getUserByEmail, getUserById } from "../../users/_actions/user.actions";
 
 export const ProfileSetting = async (values: ProfileSettingSchemaType) => {
   const user = await currentUser();

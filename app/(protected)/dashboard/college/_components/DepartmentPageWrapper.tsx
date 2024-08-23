@@ -8,9 +8,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { getUserById } from "@/lib/data/user.actions";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useQuery } from "@tanstack/react-query";
+import { getUserById } from "../../users/_actions/user.actions";
 import DepartmentTable from "./DepartmentTable";
 
 function DepartmentPageWrapper() {

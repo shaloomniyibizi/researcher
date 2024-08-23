@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 
+import { login } from "@/app/(root)/login/_actions/login.actions";
 import { FormError } from "@/components/forms/FormError";
 import { FormSuccess } from "@/components/forms/FormSuccess";
 import CustomFormField, {
@@ -17,9 +18,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
-import { login } from "@/lib/actions/login.actions";
 import { LoginSchema, LoginSchemaType } from "@/lib/validations/user";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
@@ -36,9 +37,37 @@ const LoginForm = () => {
       ? "Email already in use with different provider!"
       : "";
   const [showTwoFactor, setShowTwoFactor] = React.useState(false);
-  const [error, setError] = React.useState<string | undefined>("");
-  const [success, setSuccess] = React.useState<string | undefined>("");
-  const [isPending, startTransition] = React.useTransition();
+  const [error, setError] = React.useState("");
+  const [success, setSuccess] = React.useState("");
+  const queryClient = useQueryClient();
+
+  const { mutate, isPending } = useMutation({
+    mutationKey: ["dashboard", "users"],
+    mutationFn: login,
+    onSuccess(data) {
+      if (data?.error) {
+        form.reset();
+        toast.error(data.error);
+        setError(data.error);
+      }
+
+      if (data?.success) {
+        form.reset();
+        router.refresh();
+        update();
+        toast.success(data.success);
+        setSuccess(data.success);
+      }
+
+      if (data?.twoFactor) {
+        setShowTwoFactor(true);
+      }
+      // After creating a transaction, we need to invalidate the overview query which will fetch data in the home page
+      queryClient.invalidateQueries({
+        queryKey: ["dashboard"],
+      });
+    },
+  });
 
   // 1. Define your form.
   const form = useForm<LoginSchemaType>({
@@ -51,29 +80,30 @@ const LoginForm = () => {
 
   // 2. Define a submit handler.
   function onSubmit(values: LoginSchemaType) {
-    startTransition(() => {
-      login(values, callbackUrl)
-        .then((data) => {
-          if (data?.error) {
-            form.reset();
-            toast.error(data.error);
-            setError(data.error);
-          }
+    // startTransition(() => {
+    //   login(values, callbackUrl)
+    //     .then((data) => {
+    //       if (data?.error) {
+    //         form.reset();
+    //         toast.error(data.error);
+    //         setError(data.error);
+    //       }
 
-          if (data?.success) {
-            form.reset();
-            router.refresh();
-            update();
-            toast.success(data.success);
-            setSuccess(data.success);
-          }
+    //       if (data?.success) {
+    //         form.reset();
+    //         router.refresh();
+    //         update();
+    //         toast.success(data.success);
+    //         setSuccess(data.success);
+    //       }
 
-          if (data?.twoFactor) {
-            setShowTwoFactor(true);
-          }
-        })
-        .catch(() => toast.error("Something went wrong"));
-    });
+    //       if (data?.twoFactor) {
+    //         setShowTwoFactor(true);
+    //       }
+    //     })
+    //     .catch(() => toast.error("Something went wrong"));
+    // });
+    mutate(values);
   }
   return (
     <Card>

@@ -3,20 +3,23 @@ import { projectIndex } from "@/lib/newPinecone";
 import openai, { getEmbeddings } from "@/lib/openai";
 import { currentUser } from "@/lib/userAuth";
 import { OpenAIStream, StreamingTextResponse } from "ai";
-import { ChatCompletionMessage } from "openai/resources/index.mjs";
+// import { ChatCompletionMessage } from "openai/resources/index.mjs";
 
 export async function POST(req: Request) {
   try {
+    const user = await currentUser();
+    const userId = user?.id!;
     const body = await req.json();
-    const messages: ChatCompletionMessage[] = body.messages;
+    const messages = body.messages;
 
     const messagesTruncated = messages.slice(-6);
 
+    const lastMessage = messages[messages.length - 1];
+
     const embedding = await getEmbeddings(
-      messagesTruncated.map((message) => message.content).join("\n"),
+      messagesTruncated.map((message: any) => message.content).join("\n"),
     );
-    const user = await currentUser();
-    const userId = user?.id!;
+
     const vectorQueryResponse = await projectIndex.query({
       vector: embedding,
       topK: 4,
@@ -32,20 +35,24 @@ export async function POST(req: Request) {
     });
     console.log("Relavante project found:", relativeProjects);
 
-    const systemMessage: ChatCompletionMessage = {
+    const systemMessage = {
+      // refusal:'',
       role: "assistant",
-      content:
-        "You are an assistant for question-answering tasks." +
-        "Use the following context to answer the question. " +
-        "If the answer is not in the context, say that you don't know." +
-        "keep the answer concise." +
-        "Context:\n" +
-        relativeProjects
+      content: `You're an AI assistant who answers questions about projects.
+        You're a chat bot, so keep your replies succinct.
+        You're only allowed to use the projects below to answer the question.
+        If the question isn't related to these projects, say:
+        "Sorry, I can't find information that not related to the projects."
+        If the information isn't available in the below projects, say:
+        "Sorry, I couldn't find any information on that."
+        Do not go off topic.
+        Projects:\n\n 
+        ${relativeProjects
           .map(
             (project) =>
               `Title: ${project.title}\n\nDescription:\n${project.description}\n\nProblemStatement:\n${project.challenges}\n\nPossibleSolution:\n${project.results}\n\nObjectives:\n${project.objective}`,
           )
-          .join("\n\n"),
+          .join("\n\n")}`,
     };
 
     const response = await openai.chat.completions.create({
@@ -54,7 +61,29 @@ export async function POST(req: Request) {
       messages: [systemMessage, ...messagesTruncated],
     });
 
-    const stream = OpenAIStream(response);
+    const stream = OpenAIStream(response, {
+      onStart: async () => {
+        // save user message into db
+        await db.promessages.create({
+          data: {
+            content:
+              lastMessage.role !== "assistant" ? lastMessage.content! : "",
+            role: "user",
+            userId,
+          },
+        });
+      },
+      onCompletion: async (completion) => {
+        // save ai message into db
+        await db.promessages.create({
+          data: {
+            content: completion,
+            role: "assistant",
+            userId,
+          },
+        });
+      },
+    });
     return new StreamingTextResponse(stream);
   } catch (error) {
     console.error(error);

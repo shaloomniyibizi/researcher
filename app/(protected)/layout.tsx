@@ -1,7 +1,7 @@
 import AsideBar from "./dashboard/_components/AsideBar";
 import DashboardHeader from "./dashboard/_components/DashboardHeader";
 
-export default function ProtectedLayout({
+export default async function ProtectedLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

@@ -24,8 +24,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
+import CustomFormField, {
+  FormFieldType,
+} from "@/components/shared/CustomFormField";
+import { SelectItem } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { getUserById } from "@/lib/data/user.actions";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import {
   departmentSchema,
@@ -34,8 +37,10 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Department } from "@prisma/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { PlusSquare } from "lucide-react";
+import { Loader2, PlusSquare } from "lucide-react";
 import { toast } from "react-toastify";
+import { getUserById } from "../../users/_actions/user.actions";
+import { getCollegesByUserId } from "../_actions/collage.actions";
 import { addDepartment } from "../_actions/department.actions";
 
 interface DepartmentDialogProps {
@@ -49,6 +54,11 @@ function DepartmentDialog({ trigger }: DepartmentDialogProps) {
   const { data: dbUser, isFetching } = useQuery({
     queryKey: ["users"],
     queryFn: async () => await getUserById(user?.id!),
+  });
+
+  const { data: colleges } = useQuery({
+    queryKey: ["colleges"],
+    queryFn: async () => await getCollegesByUserId(dbUser?.id!),
   });
 
   const form = useForm<departmentSchemaType>({
@@ -115,19 +125,20 @@ function DepartmentDialog({ trigger }: DepartmentDialogProps) {
         <Separator />
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <FormField
+            <CustomFormField
+              fieldType={FormFieldType.SELECT}
               control={form.control}
               name="collegeId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="sr-only">Name</FormLabel>
-                  <FormControl>
-                    <Input defaultValue={""} {...field} placeholder="Name" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              placeholder="Select College"
+              label="College"
+              disabled={isPending}
+            >
+              {colleges?.map((college, i) => (
+                <SelectItem key={college.name + i} value={college.id}>
+                  <p>{college.name}</p>
+                </SelectItem>
+              ))}
+            </CustomFormField>
             <FormField
               control={form.control}
               name="name"
@@ -160,7 +171,11 @@ function DepartmentDialog({ trigger }: DepartmentDialogProps) {
             disabled={isPending}
             isLoading={isPending}
           >
-            {!isPending && "Create Department"}
+            {isPending ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              "Create Department"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

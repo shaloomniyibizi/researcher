@@ -34,13 +34,14 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { download, generateCsv, mkConfig } from "export-to-csv";
-import { Download, MoreHorizontal, PlusCircle, TrashIcon } from "lucide-react";
+import { MoreHorizontal, PlusCircle, TrashIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import {
   getDepartmentsByCollegeId,
   GetDepartmentsType,
 } from "../_actions/department.actions";
 import DeleteDepartmentDialog from "./DeleteDepartmentDialog";
+import DepartmentDialog from "./DepartmentDialog";
 import FieldDialog from "./FieldDialog";
 
 interface DepartmentTableProps {
@@ -155,27 +156,6 @@ function DepartmentTable({ collegeId }: DepartmentTableProps) {
             <ColumnToggle table={table} />
           </SkeletonWrapper>
           <SkeletonWrapper isLoading={isLoading} fullWidth={false}>
-            <Button
-              variant={"outline"}
-              size={"sm"}
-              className="ml-auto h-8 lg:flex"
-              onClick={() => {
-                const data = table.getFilteredRowModel().rows.map((row) => ({
-                  NO: row.original.id,
-                  TITLE: row.original.name,
-                  EMAIL: row.original.email,
-                  STUTUS: row.original.role,
-                  DEPARTMENT: row.original.Department.name,
-                  PHONE: row.original.phoneNumber,
-                  DATE: row.original.createdAt,
-                }));
-                handleExportCSV(data);
-              }}
-            >
-              <Download className="mr-2 h-4 w-4" /> Export CSV
-            </Button>
-          </SkeletonWrapper>
-          <SkeletonWrapper isLoading={isLoading} fullWidth={false}>
             <FieldDialog
               trigger={
                 <Button
@@ -184,7 +164,22 @@ function DepartmentTable({ collegeId }: DepartmentTableProps) {
                 >
                   <PlusCircle className="h-3.5 w-3.5" />
                   <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Add New
+                    Add New Field
+                  </span>
+                </Button>
+              }
+            />
+          </SkeletonWrapper>
+          <SkeletonWrapper isLoading={isLoading} fullWidth={false}>
+            <DepartmentDialog
+              trigger={
+                <Button
+                  variant={"outline"}
+                  className="border-emerald-500 bg-emerald-950 text-white hover:bg-emerald-700"
+                >
+                  <PlusCircle className="h-3.5 w-3.5" />
+                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Add New Department
                   </span>
                 </Button>
               }

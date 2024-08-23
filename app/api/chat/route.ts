@@ -77,14 +77,27 @@ export async function POST(req: Request) {
     // const currentMessageContent = messages[messages.length - 1].content;
 
     const systemTemplate = [
-      `You are an assistant for question-answering tasks. `,
-      `Use the following pieces of retrieved context to answer `,
-      `the question. If you don't know the answer, say that you `,
-      `don't know. Use three sentences maximum and keep the `,
-      `answer concise.`,
-      `\n\n`,
-      `{context}`,
+      `You're an AI assistant who answers questions about documents.
+        You're a chat bot, so keep your replies succinct.
+        You're only allowed to use the documents below to answer the question.
+        If the question isn't related to these documents, say:
+        "Sorry, I can't find information that not related to your document."
+        If the information isn't available in the below documents, say:
+        "Sorry, I couldn't find any information on that."
+        Do not go off topic.
+        Documents:\n\n
+      {context}`,
     ].join("");
+
+    // const systemTemplateP1 = [
+    //   `You are an assistant for question-answering tasks. `,
+    //   `Use the following pieces of retrieved context to answer `,
+    //   `the question. If you don't know the answer, say that you `,
+    //   `don't know. Use three sentences maximum and keep the `,
+    //   `answer concise.`,
+    //   `\n\n`,
+    //   `{context}`,
+    // ].join("");
 
     const prompt = ChatPromptTemplate.fromMessages([
       ["system", systemTemplate],

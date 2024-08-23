@@ -1,6 +1,7 @@
 import db from "@/lib/db";
 import { currentUser } from "@/lib/userAuth";
 import { redirect } from "next/navigation";
+import { getUserById } from "../../users/_actions/user.actions";
 import ChatComponent from "../_components/ChatComponent";
 import ChatSideBar from "../_components/ChatSideBar";
 import PDFViewer from "../_components/PDFViewer";
@@ -16,6 +17,10 @@ const ChatPage = async ({ params: { id } }: Props) => {
   if (!user) {
     return redirect("/login");
   }
+  const dbUser = await getUserById(user.id!);
+  if (!dbUser?.onboarded) {
+    return redirect("/onboarding");
+  }
   const _chats = await db.chats.findMany({
     where: {
       userId: user.id!,
@@ -30,7 +35,6 @@ const ChatPage = async ({ params: { id } }: Props) => {
       id,
     },
   });
-  // const isPro = await checkSubscription();
 
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] overflow-hidden">

@@ -1,10 +1,10 @@
 "use server";
 
-import { getUserById } from "@/lib/data/user.actions";
+import db from "@/lib/db";
 import { currentUser } from "@/lib/userAuth";
+import { SecuritySettingsSchemaType } from "@/lib/validations/user";
 import bcrypt from "bcryptjs";
-import db from "../../../../../lib/db";
-import { SecuritySettingsSchemaType } from "../../../../../lib/validations/user";
+import { getUserById } from "../../users/_actions/user.actions";
 
 export const SecuritySettings = async (values: SecuritySettingsSchemaType) => {
   const user = await currentUser();

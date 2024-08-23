@@ -48,7 +48,7 @@ const NotificationSettings = () => {
       <CardHeader>
         <CardTitle>Profile Settings</CardTitle>
         <CardDescription>
-          Used to identify your store in the marketplace.
+          update your Notification information to secure your account.
         </CardDescription>
       </CardHeader>
       <CardContent>

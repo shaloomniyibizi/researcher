@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
+import { reset } from "@/app/(protected)/dashboard/users/_actions/user.actions";
 import { FormError } from "@/components/forms/FormError";
 import { FormSuccess } from "@/components/forms/FormSuccess";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { reset } from "@/lib/actions/reset.actions";
 import { ResetSchema } from "@/lib/validations/user";
 import { BeatLoader } from "react-spinners";
 import { CardWrapper } from "../shared/CardWrapper";

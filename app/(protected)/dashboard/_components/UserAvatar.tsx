@@ -1,10 +1,10 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getUserById } from "@/lib/data/user.actions";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { ExtendedUser } from "@/lib/types/next-auth";
 import { AvatarProps } from "@radix-ui/react-avatar";
 import { useQuery } from "@tanstack/react-query";
 import { User } from "lucide-react";
+import { getUserById } from "../users/_actions/user.actions";
 
 interface UserAvatarProps extends AvatarProps {
   users?: Pick<ExtendedUser, "image" | "name">;

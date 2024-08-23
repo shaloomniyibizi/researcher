@@ -5,12 +5,29 @@ import { useQuery } from "@tanstack/react-query";
 import { TrendingUp } from "lucide-react";
 import { ReactNode } from "react";
 import CountUp from "react-countup";
-import { GetaNumberOfProjects } from "../projects/_actions/project.actions";
+import {
+  GetaNumberOfAcceptedProjects,
+  GetaNumberOfPendingProjects,
+  GetaNumberOfProjects,
+  GetaNumberOfRejectedProjects,
+} from "../projects/_actions/project.actions";
 
 export const StatsCards = () => {
   const { data: number, isFetching } = useQuery({
-    queryKey: ["colleges"],
+    queryKey: ["allprojects", "projects"],
     queryFn: async () => await GetaNumberOfProjects(),
+  });
+  const { data: accepted } = useQuery({
+    queryKey: ["acceptedProject", "projects"],
+    queryFn: async () => await GetaNumberOfAcceptedProjects(),
+  });
+  const { data: rejected } = useQuery({
+    queryKey: ["rejectedProject", "projects"],
+    queryFn: async () => await GetaNumberOfRejectedProjects(),
+  });
+  const { data: pedding } = useQuery({
+    queryKey: ["pendingProjects", "projects"],
+    queryFn: async () => await GetaNumberOfPendingProjects(),
   });
   return (
     <div className="relative flex flex-wrap gap-2 md:flex-nowrap">
@@ -26,7 +43,7 @@ export const StatsCards = () => {
       </SkeletonWrapper>
       <SkeletonWrapper isLoading={isFetching}>
         <StatsCard
-          value={number!}
+          value={accepted as number}
           desc={"accepted Description"}
           title={"accepted project"}
           icon={
@@ -36,7 +53,7 @@ export const StatsCards = () => {
       </SkeletonWrapper>
       <SkeletonWrapper isLoading={isFetching}>
         <StatsCard
-          value={number!}
+          value={rejected as number}
           desc={"rejected project Description"}
           title={"Rejected project "}
           icon={
@@ -46,7 +63,7 @@ export const StatsCards = () => {
       </SkeletonWrapper>
       <SkeletonWrapper isLoading={isFetching}>
         <StatsCard
-          value={number!}
+          value={pedding as number}
           desc={"pedding project Description"}
           title={"Pedding project "}
           icon={
