@@ -1,11 +1,12 @@
 generator client {
   provider = "prisma-client-js"
+  // previewFeatures = ["driverAdapters"]
 }
 
-// datasource db {
-//   provider = "postgresql"
-//   url      = env("DATABASE_URL")
-// }
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
 
 // datasource db {
 //   provider = "postgresql"
@@ -14,12 +15,12 @@ generator client {
 // }
 
 // prisma/schema.prisma
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  // uncomment next line if you use Prisma <5.10
-  // directUrl = env("DATABASE_URL_UNPOOLED")
-}
+// datasource db {
+//   provider = "postgresql"
+//   url      = env("DATABASE_URL")
+//   // uncomment next line if you use Prisma <5.10
+//   // directUrl = env("DATABASE_URL_UNPOOLED")
+// }
 
 enum ProjectStatus {
   pedding
@@ -69,12 +70,13 @@ model User {
   collegeId             String?
   departmentId          String?
   fieldId               String?
-  College               College?               @relation(fields: [collegeId], references: [id])
-  Department            Department?            @relation(fields: [departmentId], references: [id])
-  Field                 Field?                 @relation(fields: [fieldId], references: [id])
+  College               College?               @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  Department            Department?            @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  Field                 Field?                 @relation(fields: [fieldId], references: [id], onDelete: Cascade)
   Project               Project[]
   ResearchTopics        ResearchTopics[]
   Promessages           Promessages[]
+  notification          notification[]
 }
 
 model Account {
@@ -154,7 +156,7 @@ model Field {
   updatedAt    DateTime   @updatedAt
   user         User[]
   departmentId String
-  department   Department @relation(fields: [departmentId], references: [id])
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
 }
 
 model Project {
@@ -171,7 +173,7 @@ model Project {
   image        String?
   status       ProjectStatus @default(pedding)
   userId       String
-  user         User          @relation(fields: [userId], references: [id])
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   comments     Comment[]
@@ -182,7 +184,7 @@ model Comment {
   id        String   @id @default(cuid())
   text      String
   createdAt DateTime @default(now())
-  author    User     @relation(fields: [authorId], references: [id])
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId  String
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String
@@ -196,7 +198,7 @@ model Comment {
 }
 
 model Vote {
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String
@@ -206,7 +208,7 @@ model Vote {
 }
 
 model CommentVote {
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
   commentId String
@@ -225,7 +227,7 @@ model Chats {
   updatedAt  DateTime   @updatedAt
   fileKey    String
   Messages   Messages[]
-  user       User       @relation(fields: [userId], references: [id])
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     String
 }
 
@@ -240,7 +242,7 @@ model ResearchTopics {
   conclution       String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-  user             User     @relation(fields: [userId], references: [id])
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId           String
 }
 
@@ -250,7 +252,7 @@ model Messages {
   content   String
   createdAt DateTime   @default(now())
   role      UserSystem
-  chat      Chats      @relation(fields: [chatId], references: [id])
+  chat      Chats      @relation(fields: [chatId], references: [id], onDelete: Cascade)
 }
 
 model Promessages {
@@ -259,6 +261,15 @@ model Promessages {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   role      UserSystem
-  user      User       @relation(fields: [userId], references: [id])
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+}
+
+model notification {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
 }
