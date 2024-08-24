@@ -13,7 +13,7 @@ const chatModel = new ChatOpenAI({
 });
 
 export async function generateProjects(preferences: string) {
-  const prompt = `User references:${preferences}\n\n Generate at least 3 project idea based on above user preferences and trends.\n The project should be feasible and have potential for real-world impact.\n the output should be in json array and each object should contain a project name field named 'title', project description and abstract with field named 'description', problem statements field named 'problemStatement', possible solution field named 'solution', project objectives named 'objectives' with come(,) separetor, project feactures named 'feactures' with come(,) separetor and conclution field named 'conclution'.`;
+  const prompt = `User references:${preferences}\n\n Generate at least 3 project idea based on above user preferences and trends.\n The project should be feasible and have potential for real-world impact.\n the output should be in json array and each object should contain a project name field named 'title', project description and abstract with field named 'description', problem statements field named 'problemStatement', possible solution field named 'solution', project objectives named 'objectives' with come(,) separetor, project features named 'features' with come(,) separetor and conclution field named 'conclution'.`;
 
   const response = await chatModel.invoke(prompt);
 
@@ -33,7 +33,7 @@ export async function AddGeneratedProject(values: GeneratedProjectSchemaType) {
   const {
     conclution,
     description,
-    feactures,
+    features,
     objectives,
     problemStatement,
     solution,
@@ -45,7 +45,7 @@ export async function AddGeneratedProject(values: GeneratedProjectSchemaType) {
       userId: user.id!,
       conclution,
       description,
-      feactures,
+      feactures: features || "",
       objectives,
       problemStatement,
       solution,

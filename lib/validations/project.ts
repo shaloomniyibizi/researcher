@@ -39,7 +39,7 @@ export const GeneratedProjectSchema = z.object({
   problemStatement: z.string(),
   solution: z.string().optional(),
   conclution: z.string().optional(),
-  feactures: z.string().optional(),
+  features: z.string().optional(),
 });
 export type ProjectSchemaType = z.infer<typeof ProjectSchema>;
 export type GeneratedProjectSchemaType = z.infer<typeof GeneratedProjectSchema>;
