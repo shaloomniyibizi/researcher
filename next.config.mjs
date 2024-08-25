@@ -1,7 +1,10 @@
+import langchainCore from '@langchain/core';
+import withTM from 'next-transpile-modules';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-   webpack: (config, { isServer }) => {
-    config.resolve.alias['@langchain/core'] = require.resolve('@langchain/core');
+  webpack: (config, { isServer }) => {
+    config.resolve.alias['@langchain/core'] = langchainCore;
     return config;
   },
     eslint: {
@@ -35,4 +38,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withTM(['@langchain/core'])(nextConfig);
