@@ -1,13 +1,7 @@
-import langchainCore from '@langchain/core';
-import withTM from 'next-transpile-modules';
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  webpack: (config, { isServer }) => {
-    config.resolve.alias['@langchain/core'] = langchainCore;
-    return config;
-  },
-    eslint: {
+  
+  eslint: {
     // Warning: This allows production builds to successfully complete even if
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
@@ -38,4 +32,4 @@ const nextConfig = {
   },
 };
 
-export default withTM(['@langchain/core'])(nextConfig);
+export default nextConfig;
