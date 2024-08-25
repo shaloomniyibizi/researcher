@@ -1,4 +1,3 @@
-import { OpenAIEmbeddings } from "@langchain/openai";
 import { Pinecone } from "@pinecone-database/pinecone";
 
 const apiKey = process.env.PINECONE_API_KEY;
@@ -9,9 +8,9 @@ const pinecone = new Pinecone({ apiKey });
 export const projectIndex = pinecone.Index("smartreseach");
 export const pdfIndex = pinecone.Index("smartreseach");
 
-const embeddings = new OpenAIEmbeddings({
-  model: "text-embedding-3-small",
-});
+// const embeddings = new OpenAIEmbeddings({
+//   model: "text-embedding-3-small",
+// });
 
 // export async function getVectorStore() {
 //   return await PineconeStore.fromExistingIndex(embeddings, {
