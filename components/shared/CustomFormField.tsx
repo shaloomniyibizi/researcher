@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   FormControl,
@@ -16,7 +16,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { E164Number } from "libphonenumber-js/core";
+import { Loader } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import ReactDatePicker from "react-datepicker";
 import { Control } from "react-hook-form";
 import PhoneInput from "react-phone-number-input";
@@ -185,6 +187,17 @@ const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
 };
 
 const CustomFormField = (props: CustomProps) => {
+
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true); // This will only be set after the component mounts in the client-side
+  }, []);
+
+  if (!isClient) {
+    return <Loader className="w-32 h-32 animate-spin"/>; // Render nothing or a loading spinner while waiting for client-side rendering
+  }
+
   const { control, name, label } = props;
 
   return (

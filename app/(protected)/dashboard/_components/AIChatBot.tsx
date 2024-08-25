@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Message, useChat } from "ai/react";
 import { Bot, Send, Trash } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "react-toastify";
 import {
   deleteProjectMessageByUserId,
@@ -64,11 +64,11 @@ const AIChatBot = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  // useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  // }, [messages]);
   inputRef.current?.focus();
 
   const lastMessageIsUser = messages[messages.length - 1]?.role === "user";

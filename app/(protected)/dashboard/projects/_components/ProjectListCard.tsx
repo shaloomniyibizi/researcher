@@ -19,6 +19,7 @@ export function ProjectListCard() {
           {!projects
             ? "No project yet"
             : projects.map((project) => (
+              project.status === "accepted" && (
                 <Link
                   href={`/dashboard/projects/${project.id}`}
                   key={project.id}
@@ -68,7 +69,7 @@ export function ProjectListCard() {
                         ))}
                     </div>
                   ) : null}
-                </Link>
+                </Link>)
               ))}
         </div>
       </SkeletonWrapper>
