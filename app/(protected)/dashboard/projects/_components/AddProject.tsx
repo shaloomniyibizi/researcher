@@ -75,16 +75,13 @@ const AddProject = () => {
         form.reset();
         toast.error(data.error);
       }
-
       if (data?.success) {
         form.reset();
         toast.success(data.success);
-        router.back();
+        router.push("/dashboard");
       }
-
-      // After creating a transaction, we need to invalidate the overview query which will fetch data in the home page
       queryClient.invalidateQueries({
-        queryKey: ["dashboard", "projects"],
+        queryKey: ["projects"],
       });
     },
 
@@ -113,46 +110,6 @@ const AddProject = () => {
   // 2. Define a submit handler.
   function onSubmit(values: ProjectSchemaType) {
     addNewProject(values);
-    // startTransition(async () => {
-    //   const blob = values.image as string;
-    //   const pdf = values.pdf as string;
-    //   const hasImageChanged = isBase64Image(blob);
-    //   const hasPdfChanged = isBase64PDF(pdf);
-    //   if (hasImageChanged) {
-    //     const { startUpload } = newImage;
-    //     const imgRes = await startUpload(files);
-    //     if (imgRes && imgRes[0].url) {
-    //       values.image = imgRes[0].url;
-    //     }
-    //   }
-    //   if (hasPdfChanged) {
-    //     const { startUpload } = newPDF;
-    //     const pdfRes = await startUpload(pdfUrl);
-    //     if (pdfRes && pdfRes[0].url) {
-    //       values.pdf = pdfRes[0].url;
-    //     }
-    //   }
-    //   console.log(values);
-    //   addProject(values)
-    //     .then((data) => {
-    //       if (data?.error) {
-    //         form.reset();
-    //         setIsLoading(false);
-    //         toast.error(data.error);
-    //       }
-
-    //       if (data?.success) {
-    //         form.reset();
-    //         setIsLoading(false);
-    //         toast.success(data.success);
-    //         router.back();
-    //       }
-    //     })
-    //     .catch((error) => {
-    //       console.error(`Something went wrong! ${error}`);
-    //       toast.error(`Something went wrong!`);
-    //     });
-    // });
   }
 
   const handleImage = (

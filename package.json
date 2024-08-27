@@ -59,7 +59,6 @@
     "@uploadthing/react": "^6.7.2",
     "@upstash/redis": "^1.33.0",
     "ai": "^3.2.45",
-    "aws-sdk": "^2.1665.0",
     "axios": "^1.7.2",
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.0",

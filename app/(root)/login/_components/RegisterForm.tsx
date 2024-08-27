@@ -32,12 +32,10 @@ const RegisterForm = () => {
       } else {
         toast.success(data.error);
       }
-
       form.reset();
-
       // After creating a transaction, we need to invalidate the overview query which will fetch data in the home page
       queryClient.invalidateQueries({
-        queryKey: ["dashboard", "users"],
+        queryKey: ["userSession"],
       });
     },
 
@@ -45,7 +43,6 @@ const RegisterForm = () => {
       toast.loading(`Error: ${e.message}`);
     },
   });
-
   // 1. Define your form.
   const form = useForm<RegisterSchemaType>({
     resolver: zodResolver(RegisterSchema),

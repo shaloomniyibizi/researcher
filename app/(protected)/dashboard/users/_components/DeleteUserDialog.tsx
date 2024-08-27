@@ -27,7 +27,7 @@ function DeleteUserDialog({ open, setOpen, userId }: DeleteUserDialogProps) {
       toast.success(data.success);
 
       queryClient.invalidateQueries({
-        queryKey: ["repository", "users"],
+        queryKey: ["users"],
       });
     },
     onError: (error) => {

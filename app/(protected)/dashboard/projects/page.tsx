@@ -8,7 +8,6 @@ import { currentUser } from "@/lib/userAuth";
 import { redirect } from "next/navigation";
 import AIChatBot from "../_components/AIChatBot";
 import { getUserById } from "../users/_actions/user.actions";
-import { getProjectMessageByUserId } from "./_actions/projectMessage.actions";
 import ChatHeader from "./_components/ChatHeader";
 import ProjectCard from "./_components/ProjectCard";
 async function page() {
@@ -16,14 +15,10 @@ async function page() {
   if (!user) redirect("/login");
   const dbUser = await getUserById(user.id!);
   if (!dbUser?.onboarded) redirect("/onboarding");
-
-  const promessage = await getProjectMessageByUserId(dbUser.id);
-
   return (
     <div className="flex min-h-[calc(100vh-3.6rem)] flex-col">
       <main className="min-h-screen flex-1">
         {/* <Filters /> */}
-
         <ProjectCard />
         <Accordion
           type="single"

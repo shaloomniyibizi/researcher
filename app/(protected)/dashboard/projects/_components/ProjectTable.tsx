@@ -1,5 +1,18 @@
 "use client";
 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { Separator } from "@/components/ui/separator";
+import { MAX_DATE_RANGE_DAYS } from "@/lib/constants";
+import { differenceInDays, startOfYear } from "date-fns";
+import { toast } from "react-toastify";
+
 import { DataTableColumnHeader } from "@/components/datatable/ColumnHeader";
 import { ColumnToggle } from "@/components/datatable/ColumnToggle";
 import { DataTableFacetedFilter } from "@/components/datatable/FacetedFilter";
@@ -48,8 +61,6 @@ import DeleteProjectDialog from "./DeleteProjectDialog";
 import RejectProjectDialog from "./RejectProjectDialog";
 
 interface ProjectTableProps {
-  from: Date;
-  to: Date;
   collegeId: string;
 }
 
@@ -114,9 +125,9 @@ const columns: ColumnDef<ProjectRow>[] = [
     },
   },
   {
-    accessorKey: "department",
+    accessorKey: "field",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Department" />
+      <DataTableColumnHeader column={column} title="Field" />
     ),
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id));
@@ -125,13 +136,13 @@ const columns: ColumnDef<ProjectRow>[] = [
       <div
         className={cn(
           "rounded-lg p-2 text-center capitalize",
-          row.original.user.Department!.name === "ICT" &&
+          row.original.user.Field!.name === "ICT" &&
             "bg-emerald-400/10 text-emerald-500",
-          row.original.user.Department!.name !== "ICT" &&
+          row.original.user.Field!.name !== "ICT" &&
             "bg-red-400/10 text-red-500",
         )}
       >
-        {row.original.user.Department!.name}
+        {row.original.user.Field!.name}
       </div>
     ),
   },
@@ -181,16 +192,20 @@ const csvConfig = mkConfig({
   useKeysAsHeaders: true,
 });
 
-function ProjectTable({ from, to, collegeId }: ProjectTableProps) {
+function ProjectTable({ collegeId }: ProjectTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-
+  const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
+    from: startOfYear(new Date()),
+    to: new Date(),
+  });
+  
   const { data: project, isLoading } = useQuery<GetAllProjectsType>({
-    queryKey: ["repository", "projects", from, to],
+    queryKey: ["repository", dateRange.from, dateRange.to],
     queryFn: async () =>
       await getAllProjectsByDate(
-        dateToUTCDate(from),
-        dateToUTCDate(to),
+        dateToUTCDate(dateRange.from),
+        dateToUTCDate(dateRange.to),
         collegeId,
       ),
   });
@@ -232,16 +247,16 @@ function ProjectTable({ from, to, collegeId }: ProjectTableProps) {
     return Array.from(uniquTitle);
   }, [project]);
 
-  const departmentOptions = useMemo(() => {
-    const departmentMap = new Map();
+  const fieldOptions = useMemo(() => {
+    const fieldMap = new Map();
     project?.forEach((project) => {
-      departmentMap.set(project.user.Department!.name, {
-        value: project.user.Department!.name,
-        label: project.user.Department!.name,
+      fieldMap.set(project.user.Field!.name, {
+        value: project.user.Field!.name,
+        label: project.user.Field!.name,
       });
     });
-    const uniquDepartment = new Set(departmentMap.values());
-    return Array.from(uniquDepartment);
+    const uniquField = new Set(fieldMap.values());
+    return Array.from(uniquField);
   }, [project]);
   const statusOptions = useMemo(() => {
     const statusMap = new Map();
@@ -256,145 +271,179 @@ function ProjectTable({ from, to, collegeId }: ProjectTableProps) {
   }, [project]);
 
   return (
-    <div className="w-full">
-      <div className="flex flex-wrap items-end justify-between gap-2 py-4">
-        <div className="flex gap-2">
-          <SkeletonWrapper isLoading={isLoading} fullWidth={false}>
-            {table.getColumn("title") && (
-              <DataTableFacetedFilter
-                options={titleOptions}
-                title="Title"
-                column={table.getColumn("title")}
-              />
-            )}
-          </SkeletonWrapper>
-          <SkeletonWrapper isLoading={isLoading} fullWidth={false}>
-            {table.getColumn("department") && (
-              <DataTableFacetedFilter
-                options={departmentOptions}
-                title="Department"
-                column={table.getColumn("department")}
-              />
-            )}
-          </SkeletonWrapper>
-          <SkeletonWrapper isLoading={isLoading} fullWidth={false}>
-            {table.getColumn("status") && (
-              <DataTableFacetedFilter
-                options={statusOptions}
-                title="Status"
-                column={table.getColumn("status")}
-              />
-            )}
-          </SkeletonWrapper>
+    <Card>
+      <CardHeader>
+        <div className="flex flex-wrap items-center justify-between">
+          <div className="">
+            <CardTitle className="text-3xl font-bold">Project</CardTitle>
+            <CardDescription>
+              Manage your projects and view their sales performance.
+            </CardDescription>
+          </div>
+          <DateRangePicker
+            initialDateFrom={dateRange.from}
+            initialDateTo={dateRange.to}
+            showCompare={false}
+            onUpdate={(values) => {
+              const { from, to } = values.range;
+
+              if (!from || !to) return;
+              if (differenceInDays(to, from) > MAX_DATE_RANGE_DAYS) {
+                toast.error(
+                  `The selected date range is too big, Max allowed range is ${MAX_DATE_RANGE_DAYS} days`,
+                );
+                return;
+              }
+              setDateRange({ from, to });
+            }}
+          />
         </div>
-        <div className="flex flex-wrap gap-2">
-          <SkeletonWrapper isLoading={isLoading} fullWidth={false}>
-            <ColumnToggle table={table} />
-          </SkeletonWrapper>
-          <SkeletonWrapper isLoading={isLoading} fullWidth={false}>
-            <Button
-              variant={"outline"}
-              size={"sm"}
-              className="ml-auto h-8 lg:flex"
-              onClick={() => {
-                const data = table.getFilteredRowModel().rows.map((row) => ({
-                  NO: row.original.id,
-                  TITLE: row.original.title,
-                  DESCRIPTION: row.original.description,
-                  STUTUS: row.original.status,
-                  DEPARTMENT: row.original.user.Department.name,
-                  AUTHOR: row.original.user.name,
-                  DATE: row.original.createdAt,
-                }));
-                handleExportCSV(data);
-              }}
-            >
-              <Download className="mr-2 h-4 w-4" /> Export CSV
-            </Button>
-          </SkeletonWrapper>
-          <SkeletonWrapper isLoading={isLoading} fullWidth={false}>
-            <Button asChild size="sm" className="h-8 gap-1">
-              <Link href={"/dashboard/projects/add"}>
-                <PlusCircle className="h-3.5 w-3.5" />
-                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                  Add Project
-                </span>
-              </Link>
-            </Button>
-          </SkeletonWrapper>
-        </div>
-      </div>
-      <SkeletonWrapper isLoading={isLoading}>
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
+      </CardHeader>
+      <Separator />
+      <CardContent>
+        <div className="w-full">
+          <div className="flex flex-wrap items-end justify-between gap-2 py-4">
+            <div className="flex gap-2">
+              <SkeletonWrapper isLoading={isLoading} fullWidth={false}>
+                {table.getColumn("title") && (
+                  <DataTableFacetedFilter
+                    options={titleOptions}
+                    title="Title"
+                    column={table.getColumn("title")}
+                  />
+                )}
+              </SkeletonWrapper>
+              <SkeletonWrapper isLoading={isLoading} fullWidth={false}>
+                {table.getColumn("field") && (
+                  <DataTableFacetedFilter
+                    options={fieldOptions}
+                    title="Field"
+                    column={table.getColumn("field")}
+                  />
+                )}
+              </SkeletonWrapper>
+              <SkeletonWrapper isLoading={isLoading} fullWidth={false}>
+                {table.getColumn("status") && (
+                  <DataTableFacetedFilter
+                    options={statusOptions}
+                    title="Status"
+                    column={table.getColumn("status")}
+                  />
+                )}
+              </SkeletonWrapper>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <SkeletonWrapper isLoading={isLoading} fullWidth={false}>
+                <ColumnToggle table={table} />
+              </SkeletonWrapper>
+              <SkeletonWrapper isLoading={isLoading} fullWidth={false}>
+                <Button
+                  variant={"outline"}
+                  size={"sm"}
+                  className="ml-auto h-8 lg:flex"
+                  onClick={() => {
+                    const data = table
+                      .getFilteredRowModel()
+                      .rows.map((row) => ({
+                        NO: row.original.id,
+                        TITLE: row.original.title,
+                        DESCRIPTION: row.original.description,
+                        STUTUS: row.original.status,
+                        FIELD: row.original.user.Field.name,
+                        AUTHOR: row.original.user.name,
+                        DATE: row.original.createdAt,
+                      }));
+                    handleExportCSV(data);
+                  }}
+                >
+                  <Download className="mr-2 h-4 w-4" /> Export CSV
+                </Button>
+              </SkeletonWrapper>
+              <SkeletonWrapper isLoading={isLoading} fullWidth={false}>
+                <Button asChild size="sm" className="h-8 gap-1">
+                  <Link href={"/dashboard/projects/add"}>
+                    <PlusCircle className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                      Add Project
+                    </span>
+                  </Link>
+                </Button>
+              </SkeletonWrapper>
+            </div>
+          </div>
+          <SkeletonWrapper isLoading={isLoading}>
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => {
+                        return (
+                          <TableHead key={header.id}>
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext(),
+                                )}
+                          </TableHead>
+                        );
+                      })}
+                    </TableRow>
+                  ))}
+                </TableHeader>
+                <TableBody>
+                  {table.getRowModel().rows?.length ? (
+                    table.getRowModel().rows.map((row) => (
+                      <TableRow
+                        key={row.id}
+                        data-state={row.getIsSelected() && "selected"}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id}>
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
                             )}
-                      </TableHead>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={columns.length}
+                        className="h-24 text-center"
+                      >
+                        No results.
                       </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    No results.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="flex items-center justify-end space-x-2 py-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+              >
+                Next
+              </Button>
+            </div>
+          </SkeletonWrapper>
         </div>
-        <div className="flex items-center justify-end space-x-2 py-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-          </Button>
-        </div>
-      </SkeletonWrapper>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 

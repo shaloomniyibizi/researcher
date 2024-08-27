@@ -31,7 +31,7 @@ function DeleteDepartmentDialog({
       toast.success(data.success);
 
       queryClient.invalidateQueries({
-        queryKey: ["repository", "departments"],
+        queryKey: ["department"],
       });
     },
     onError: (error) => {

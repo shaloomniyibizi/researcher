@@ -42,7 +42,6 @@ const LoginForm = () => {
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = useMutation({
-    mutationKey: ["dashboard", "users"],
     mutationFn: login,
     onSuccess(data) {
       if (data?.error) {
@@ -53,7 +52,6 @@ const LoginForm = () => {
 
       if (data?.success) {
         form.reset();
-        router.refresh();
         update();
         toast.success(data.success);
         setSuccess(data.success);
@@ -64,7 +62,7 @@ const LoginForm = () => {
       }
       // After creating a transaction, we need to invalidate the overview query which will fetch data in the home page
       queryClient.invalidateQueries({
-        queryKey: ["dashboard"],
+        queryKey: ["userSession"],
       });
     },
   });

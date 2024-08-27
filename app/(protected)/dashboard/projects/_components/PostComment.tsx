@@ -1,5 +1,6 @@
 "use client";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,7 +13,6 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { FC, useRef, useState } from "react";
 import { toast } from "react-toastify";
-import UserAvatar from "../../_components/UserAvatar";
 import { addComment } from "../_actions/comments.actions";
 import CommentVotes from "./CommentVotes";
 
@@ -53,7 +53,15 @@ const PostComment: FC<PostCommentProps> = ({
   return (
     <div ref={commentRef} className="flex flex-col">
       <div className="flex items-center">
-        <UserAvatar />
+        <Avatar>
+          <AvatarImage src={comment.author.image!} alt={comment.author.name} />
+          <AvatarFallback>
+            {comment.author.name
+              .split(" ")
+              .map((chunk) => chunk[0])
+              .join("")}
+          </AvatarFallback>
+        </Avatar>
         <div className="ml-2 flex items-center gap-x-2">
           <p className="text-sm font-medium text-accent-foreground">
             {comment.author.name}

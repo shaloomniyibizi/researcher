@@ -1,16 +1,17 @@
 "use client";
 
 import { uploadToS3 } from "@/lib/s3";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { Inbox, Loader } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { toast } from "react-toastify";
 
 const FileUpload = () => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   // let uploadId: any;
   const [isUploading, setIsUploading] = useState(false);
   const { mutate, isPending } = useMutation({
@@ -26,6 +27,17 @@ const FileUpload = () => {
       const res = await axios.post("/api/create-chat", { file_key, file_name });
 
       return res.data;
+    }, 
+    onSuccess: (data) => { 
+      toast.success("New chat created Successfully")
+      queryClient.invalidateQueries({
+        queryKey: ["pdfchats"],
+      });
+      redirect(`/dashboard/chatpdf/${data.chat_id}`)
+    },
+
+    onError: (e) => {
+      toast.loading(`Error: ${e.message}`);
     },
   });
 

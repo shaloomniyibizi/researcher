@@ -14,13 +14,7 @@ export async function POST(req: Request, res: Response) {
     console.log(file_key, file_name);
 
     const fileName = await downloadFromS3(file_key);
-    // const loader = new PDFLoader(fileName!);
-    // const docs = await loader.load();
 
-    // console.log(docs.length);
-
-    // const embedding = await getEmbeddings(docs[0].pageContent);
-    // const addChat = await db.$transaction(async (txt) => {
       const chat = await db.chats.create({
         data: {
           fileKey: file_key, 
@@ -31,17 +25,7 @@ export async function POST(req: Request, res: Response) {
         },
       });
       const chat_id = chat.id;
-      // await pdfIndex.upsert([
-      //   {
-      //     id: chat.id,
-      //     values: embedding,
-      //     metadata: { userId: user?.id! },
-      //   },
-      // ]);
 
-    //   return chat_id;
-    // });
-    // const chat_id = addChat;
     return NextResponse.json({ chat_id }, { status: 200 });
   } catch (error) {
     console.error(error);

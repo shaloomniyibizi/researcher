@@ -96,7 +96,7 @@ const AddFaculityForm = ({ user }: { user?: DBExtendedUser }) => {
 
       // After creating a transaction, we need to invalidate the overview query which will fetch data in the home page
       queryClient.invalidateQueries({
-        queryKey: ["dashboard", "users"],
+        queryKey: ["faculity"],
       });
     },
 

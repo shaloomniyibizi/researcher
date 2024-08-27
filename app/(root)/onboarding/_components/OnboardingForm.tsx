@@ -91,9 +91,9 @@ const OnboardingForm = ({ user }: Props) => {
 
       if (data.success) {
         update();
-        router.refresh();
         toast.success(data.success);
         router.push("/dashboard");
+        router.refresh();
       }
 
       // After creating a transaction, we need to invalidate the overview query which will fetch data in the home page
@@ -113,9 +113,9 @@ const OnboardingForm = ({ user }: Props) => {
     defaultValues: {
       name: user?.name || undefined,
       email: user?.email || undefined,
-      collegeId: "",
-      departmentId: "",
-      fieldId: "",
+      collegeId: user?.College || undefined,
+      departmentId: user?.Department?.name || undefined,
+      fieldId: user?.Field?.name || undefined,
       onboarded: true,
       image: user?.image || undefined,
       bio: user?.bio || undefined,

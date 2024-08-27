@@ -24,9 +24,9 @@ import {
 } from "../projects/_actions/projectMessage.actions";
 import UserAvatar from "./UserAvatar";
 
-interface Props {
-  data?: Message[];
-}
+// interface Props {
+//   data?: Message[];
+// }
 const AIChatBot = () => {
   const [open, setOpen] = useState(false);
   const user = useCurrentUser();
@@ -65,9 +65,9 @@ const AIChatBot = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+  if (scrollRef.current) {
+    scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }
   // }, [messages]);
   inputRef.current?.focus();
 
@@ -75,7 +75,7 @@ const AIChatBot = () => {
 
   return (
     <div className={cn("bottom-0 right-0 z-10 w-[500px] p-1 xl:right-36")}>
-      <div className="flex h-[550px] flex-col rounded shadow-xl">
+      <div className="flex h-[450px] flex-col rounded shadow-xl">
         <div className="mt-3 h-full overflow-y-auto px-3" ref={scrollRef}>
           {messages.map((message) => (
             <ChatMessage message={message} key={message.id} />

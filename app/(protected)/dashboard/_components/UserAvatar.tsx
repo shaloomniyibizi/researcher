@@ -12,7 +12,7 @@ interface UserAvatarProps extends AvatarProps {
 export function UserAvatar({ users, ...props }: UserAvatarProps) {
   const currentUser = useCurrentUser();
   const { data: user } = useQuery({
-    queryKey: ["users", "sessions", "currentUser"],
+    queryKey: ["userSession"],
     queryFn: async () => await getUserById(currentUser?.id!),
   });
 

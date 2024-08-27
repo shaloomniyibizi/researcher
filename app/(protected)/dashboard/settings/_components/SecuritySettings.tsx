@@ -50,14 +50,14 @@ const SecuritySettingForm = () => {
 
       if (data.success) {
         update();
-        router.refresh();
         toast.success(data.success);
+        router.refresh();
         router.back();
       }
 
       // After creating a transaction, we need to invalidate the overview query which will fetch data in the home page
       queryClient.invalidateQueries({
-        queryKey: ["dashboard", "users"],
+        queryKey: ["dashboard", "usersSecurity"],
       });
     },
 

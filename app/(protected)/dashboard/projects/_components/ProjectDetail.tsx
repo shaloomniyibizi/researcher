@@ -6,25 +6,31 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
-import { ExtendedProject } from "@/lib/types/db";
 import { cn, dateToUTCDate } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
 import { Download, Heart, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { getProjectById } from "../_actions/project.actions";
 import CreateComment from "./CreateComment";
 import PostComment from "./PostComment";
 
 interface ProjectProps {
-  project: ExtendedProject;
+  projectId: string;
 }
 
-const ProjectDetail = ({ project }: ProjectProps) => {
+const ProjectDetail = ({ projectId }: ProjectProps) => {
   const [readMore, setReadMore] = useState(false);
   const toggleReadMore = () => {
     setReadMore(!readMore);
   };
   const user = useCurrentUser();
+
+  const { data: project } = useQuery({
+    queryKey: ["projects", projectId],
+    queryFn: async () => await getProjectById(projectId),
+  });
 
   return (
     <div>
@@ -34,8 +40,8 @@ const ProjectDetail = ({ project }: ProjectProps) => {
             <Card>
               <CardContent className="flex items-center justify-center pt-6">
                 <Image
-                  src={project.image || ""}
-                  alt={project.title}
+                  src={project?.image! || ""}
+                  alt={project?.title!}
                   width={1200}
                   height={1200}
                   className="h-full max-w-full object-cover lg:max-w-[480px]"
@@ -46,8 +52,8 @@ const ProjectDetail = ({ project }: ProjectProps) => {
               <Card>
                 <CardContent className="p-2">
                   <Image
-                    src={project.image || ""}
-                    alt={project.title}
+                    src={project?.image || ""}
+                    alt={project?.title!}
                     width={1200}
                     height={1200}
                     className="h-16 w-28 rounded-sm object-cover"
@@ -57,8 +63,8 @@ const ProjectDetail = ({ project }: ProjectProps) => {
               <Card>
                 <CardContent className="p-2">
                   <Image
-                    src={project.image || ""}
-                    alt={project.title}
+                    src={project?.image || ""}
+                    alt={project?.title!}
                     width={1200}
                     height={1200}
                     className="h-16 w-28 rounded-sm object-cover"
@@ -68,8 +74,8 @@ const ProjectDetail = ({ project }: ProjectProps) => {
               <Card>
                 <CardContent className="p-2">
                   <Image
-                    src={project.image || ""}
-                    alt={project.title}
+                    src={project?.image || ""}
+                    alt={project?.title!}
                     width={1200}
                     height={1200}
                     className="h-16 w-28 object-cover"
@@ -79,8 +85,8 @@ const ProjectDetail = ({ project }: ProjectProps) => {
               <Card>
                 <CardContent className="p-2">
                   <Image
-                    src={project.image || ""}
-                    alt={project.title}
+                    src={project?.image || ""}
+                    alt={project?.title!}
                     width={1200}
                     height={1200}
                     className="h-16 w-28 object-cover"
@@ -91,13 +97,16 @@ const ProjectDetail = ({ project }: ProjectProps) => {
           </div>
           <div className="max-w-2xl">
             <div className="flex items-center justify-between">
-              <h1 className="text-xl font-bold lg:text-3xl">{project.title}</h1>
+              <h1 className="text-xl font-bold lg:text-3xl">
+                {project?.title}
+              </h1>
               <Heart className="hover:fill-red-700 hover:stroke-red-700" />
             </div>
             <div className="mt-2 flex flex-col">
-              <p className="text-gray-600">Author: {project.user.name}</p>
+              <p className="text-gray-600">Author: {project?.user.name}</p>
               <p className="text-gray-600">
-                Published on: {dateToUTCDate(project.createdAt).toDateString()}
+                Published on:{" "}
+                {dateToUTCDate(project?.createdAt!).toDateString()}
               </p>
             </div>
             <div className="mt-2 flex gap-0.5">
@@ -118,7 +127,7 @@ const ProjectDetail = ({ project }: ProjectProps) => {
                   "text-justify",
                   readMore ? "line-clamp-none" : "line-clamp-3",
                 )}
-                dangerouslySetInnerHTML={{ __html: project.description! }}
+                dangerouslySetInnerHTML={{ __html: project?.description! }}
               ></div>
               <Button type="button" size={"sm"} onClick={toggleReadMore}>
                 Read {readMore ? "Less" : "More"}
@@ -126,19 +135,19 @@ const ProjectDetail = ({ project }: ProjectProps) => {
             </div>
             <div className="mt-4">
               <h3 className="text-xl font-semibold">Technologies Used</h3>
-              <p>{project.technologies}</p>
+              <p>{project?.technologies}</p>
             </div>
             <Separator className="my-4" />
             <h2 className="mt-4 text-2xl font-semibold">Download Links</h2>
             <div className="mt-2 flex gap-8">
               <Button className="w-full" asChild>
-                <Link target="_blank" href={project.pdf || ""}>
+                <Link target="_blank" href={project?.pdf || ""}>
                   <Download className="mr-2 h-4 w-4" />
                   Download PDF
                 </Link>
               </Button>
               <Button className="w-full" asChild variant={"secondary"}>
-                <Link target="_blank" href={project.codeLink || ""}>
+                <Link target="_blank" href={project?.codeLink || ""}>
                   <Download className="mr-2 h-4 w-4" />
                   View Code Repository
                 </Link>
@@ -158,10 +167,10 @@ const ProjectDetail = ({ project }: ProjectProps) => {
             </TabsList>
             <TabsContent value="reviews">
               <ScrollArea className="h-[80vh] whitespace-nowrap rounded-md border p-4">
-                <CreateComment projectId={project.id} authorId={user?.id!} />
+                <CreateComment projectId={project?.id!} authorId={user?.id!} />
 
                 <div className="mt-4 flex flex-col gap-y-6">
-                  {project.comments
+                  {project?.comments
                     .filter((comment) => !comment.replyToId)
                     .map((topLevelComment) => {
                       const topLevelCommentVotesAmt =
@@ -229,7 +238,7 @@ const ProjectDetail = ({ project }: ProjectProps) => {
             <TabsContent value="objective">
               <div
                 className={cn("max-w-7xl text-justify")}
-                dangerouslySetInnerHTML={{ __html: project.objective! }}
+                dangerouslySetInnerHTML={{ __html: project?.objective! }}
               ></div>
             </TabsContent>
             <TabsContent value="details">
@@ -239,21 +248,21 @@ const ProjectDetail = ({ project }: ProjectProps) => {
                   <h3 className="text-xl font-semibold">Methodology</h3>
                   <div
                     className={cn("max-w-7xl text-justify")}
-                    dangerouslySetInnerHTML={{ __html: project.methodology! }}
+                    dangerouslySetInnerHTML={{ __html: project?.methodology! }}
                   ></div>
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold">Challenges</h3>
                   <div
                     className={cn("max-w-7xl text-justify")}
-                    dangerouslySetInnerHTML={{ __html: project.challenges! }}
+                    dangerouslySetInnerHTML={{ __html: project?.challenges! }}
                   ></div>
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold">Results</h3>
                   <div
                     className={cn("text-justify")}
-                    dangerouslySetInnerHTML={{ __html: project.results! }}
+                    dangerouslySetInnerHTML={{ __html: project?.results! }}
                   ></div>
                 </div>
               </div>

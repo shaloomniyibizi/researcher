@@ -3,6 +3,7 @@ import {
   Comment,
   Department,
   Field,
+  notification,
   Project,
   User,
 } from "@prisma/client";
@@ -15,6 +16,9 @@ export type DBExtendedUser = User & {
   College: Collage | null;
   Department: Department | null;
   Field: Field | null;
+};
+export type ExtendedNotification = notification & {
+  user: User | null;
 };
 
 export type ExtendedComment = Comment & {

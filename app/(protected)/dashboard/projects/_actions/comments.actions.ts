@@ -131,7 +131,7 @@ export const addVote = async (values: VoteSchemaType) => {
             createdAt: project.createdAt,
           };
 
-          await redis.hset(`project:${projectId}`, cachePayload); // Store the project data as a hash
+          await redis.set(`project:${projectId}`, cachePayload); // Store the project data as a hash
         }
 
         return { success: "OK" };

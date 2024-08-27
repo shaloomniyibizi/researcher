@@ -3,6 +3,7 @@ import { projectIndex } from "@/lib/newPinecone";
 import openai, { getEmbeddings } from "@/lib/openai";
 import { currentUser } from "@/lib/userAuth";
 import { OpenAIStream, StreamingTextResponse } from "ai";
+import { ChatCompletionMessage } from "openai/resources/index.mjs";
 // import { ChatCompletionMessage } from "openai/resources/index.mjs";
 
 export async function POST(req: Request) {
@@ -10,14 +11,14 @@ export async function POST(req: Request) {
     const user = await currentUser();
     const userId = user?.id!;
     const body = await req.json();
-    const messages = body.messages;
+    const messages: ChatCompletionMessage[] = body.messages;
 
     const messagesTruncated = messages.slice(-6);
 
     const lastMessage = messages[messages.length - 1];
 
     const embedding = await getEmbeddings(
-      messagesTruncated.map((message: any) => message.content).join("\n"),
+      messagesTruncated.map((message) => message.content).join("\n"),
     );
 
     const vectorQueryResponse = await projectIndex.query({
@@ -35,24 +36,34 @@ export async function POST(req: Request) {
     });
     console.log("Relavante project found:", relativeProjects);
 
-    const systemMessage = {
-      // refusal:'',
-      role: "assistant",
-      content: `You're an AI assistant who answers questions about projects.
-        You're a chat bot, so keep your replies succinct.
-        You're only allowed to use the projects below to answer the question.
-        If the question isn't related to these projects, say:
-        "Sorry, I can't find information that not related to the projects."
-        If the information isn't available in the below projects, say:
-        "Sorry, I couldn't find any information on that."
-        Do not go off topic.
-        Projects:\n\n 
-        ${relativeProjects
+    const systemMessage: ChatCompletionMessage = {
+      content:
+        "You are an intelligent project-store app. you answer the user's question based on their existing projects" +
+        "the existing projects:\n" +
+        relativeProjects
           .map(
             (project) =>
-              `Title: ${project.title}\n\nDescription:\n${project.description}\n\nProblemStatement:\n${project.challenges}\n\nPossibleSolution:\n${project.results}\n\nObjectives:\n${project.objective}`,
+              `Title: ${project.title}\n\nDescription:\n${project.description}\n\nProblemStatement:\n${project.challenges}\n\nPossibleSolution:\n${project.results}\n\nObjectives:\n${project.objective}\n\nMethodology:\n${project.methodology}\n\nTechnologies:\n${project.technologies}`,
           )
-          .join("\n\n")}`,
+          .join("\n\n"),
+
+      // `You're an AI assistant who answers questions about provided content.
+      // You're a chat bot, so keep your replies succinct.
+      // You're only allowed to use the content below to answer the question.
+      // If the question isn't related to content, say:
+      // "Sorry, I can't find information! ansk any question that related to the stored projects."
+      // If the information isn't available in the below projects, say:
+      // "Sorry, I couldn't find any information in all projects."
+      // Do not go off topic.
+      // content:\n\n
+      // ${relativeProjects
+      //   .map(
+      //     (project) =>
+      //       `Title: ${project.title}\n\nDescription:\n${project.description}\n\nProblemStatement:\n${project.challenges}\n\nPossibleSolution:\n${project.results}\n\nObjectives:\n${project.objective}\n\nMethodology:\n${project.methodology}\n\nTechnologies:\n${project.technologies}`,
+      //   )
+      //   .join("\n\n")}`,
+      refusal: null,
+      role: "assistant",
     };
 
     const response = await openai.chat.completions.create({

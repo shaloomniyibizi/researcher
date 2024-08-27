@@ -380,4 +380,4 @@ export const StatusIcon = {
   rejected: "/assets/icons/cancelled.svg",
 };
 
-export const MAX_DATE_RANGE_DAYS = 90;
+export const MAX_DATE_RANGE_DAYS = 360;

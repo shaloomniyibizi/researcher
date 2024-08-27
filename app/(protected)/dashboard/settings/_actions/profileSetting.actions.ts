@@ -1,8 +1,6 @@
 "use server";
 
 import db from "@/lib/db";
-import { sendVerificationEmail } from "@/lib/emails";
-import { generateVerificationToken } from "@/lib/tokens";
 import { currentUser } from "@/lib/userAuth";
 import { ProfileSettingSchemaType } from "@/lib/validations/user";
 import { getUserByEmail, getUserById } from "../../users/_actions/user.actions";
@@ -27,13 +25,13 @@ export const ProfileSetting = async (values: ProfileSettingSchemaType) => {
       return { error: "Email already in use!" };
     }
 
-    const verificationToken = await generateVerificationToken(values.email);
-    await sendVerificationEmail(
-      verificationToken.email,
-      verificationToken.token,
-    );
+    // const verificationToken = await generateVerificationToken(values.email);
+    // await sendVerificationEmail(
+    //   verificationToken.email,
+    //   verificationToken.token,
+    // );
 
-    return { success: "Verification email sent!" };
+    // return { success: "Verification email sent!" };
   }
 
   if (user.isOAuth) {

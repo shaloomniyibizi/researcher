@@ -7,16 +7,6 @@ import { currentUser } from "@/lib/userAuth";
 import { ProjectSchema, ProjectSchemaType } from "@/lib/validations/project";
 import { redirect } from "next/navigation";
 
-export const getProjectByTitle = async (title: string) => {
-  try {
-    const project = await db.project.findFirst({ where: { title } });
-
-    return project;
-  } catch {
-    return null;
-  }
-};
-
 export const addProject = async (values: ProjectSchemaType) => {
   const validatedFields = ProjectSchema.safeParse(values);
 
@@ -42,7 +32,7 @@ export const addProject = async (values: ProjectSchemaType) => {
     image,
   } = validatedFields.data;
 
-  const existingProject = await getProjectByTitle(title);
+  const existingProject = await db.project.findFirst({ where: { title } });
 
   if (existingProject) {
     return { error: "Title already in use!" };
@@ -50,23 +40,36 @@ export const addProject = async (values: ProjectSchemaType) => {
 
   if (!user) return { error: "You are not allowed to add project" };
 
-  const project = await db.project.create({
-    data: {
-      title,
-      description,
-      challenges,
-      codeLink,
-      methodology,
-      objective,
-      pdf,
-      results,
-      technologies,
-      image,
-      userId: user.id!,
-    },
+  const addProject = await db.$transaction(async (txt) => {
+    const project = await txt.project.create({
+      data: {
+        title,
+        description,
+        challenges,
+        codeLink,
+        methodology,
+        objective,
+        pdf,
+        results,
+        technologies,
+        image,
+        userId: user.id!,
+      },
+    });
+    //Add notification
+    await txt.notification.create({
+      data: {
+        type: "Message",
+        message: `Your project ${project.title} added successfully and is waiting for approval`,
+        title: "Project added",
+        projectId: project.id,
+        userId: user.id!,
+      },
+    });
+    return project;
   });
+  if (!addProject) return { error: "Fail to add New project !" };
 
-  if (!project) return { error: "Fail to add New project !" };
   return { success: "New project added successfully!" };
 };
 
@@ -135,6 +138,9 @@ export const getAllProjectsByDate = async (
           },
         },
       },
+    },
+    orderBy: {
+      createdAt: "asc",
     },
   });
 
@@ -249,6 +255,8 @@ export async function AcceptProject(id: string) {
     project.objective!,
     project.challenges,
     project.results,
+    project.technologies,
+    project.methodology!,
   );
   //Accept project from db
   const acceptproject = await db.$transaction(async (txt) => {
@@ -269,6 +277,16 @@ export async function AcceptProject(id: string) {
       },
     ]);
 
+    await txt.notification.create({
+      data: {
+        type: "ProjectUpdate",
+        message: `Your project ${acceptproject.title} accepted`,
+        title: "Project accepted",
+        projectId: acceptproject.id,
+        userId: user.id!,
+      },
+    });
+
     return acceptproject;
   });
 
@@ -287,17 +305,36 @@ export async function RejectProject(id: string) {
   });
 
   if (!project) throw new Error("Bad request");
-  //Delete project from db
-  const rejectproject = await db.project.update({
-    where: {
-      id,
-    },
-    data: {
-      status: "rejected",
-    },
+
+  const rejectproject = await db.$transaction(async (txt) => {
+    //reject project from db
+    const rejeproject = await txt.project.update({
+      where: {
+        id,
+      },
+      data: {
+        status: "rejected",
+      },
+    });
+
+    //Delete project from pinecone
+    await projectIndex.deleteOne(id);
+
+    //Add notification
+    await txt.notification.create({
+      data: {
+        type: "ProjectUpdate",
+        message: `Your project ${rejeproject.title} Rejected`,
+        title: "Project Rejected",
+        projectId: rejeproject.id,
+        userId: user.id!,
+      },
+    });
+
+    return rejeproject;
   });
-  if (!rejectproject) return { error: "Fail to delete project !" };
-  return { success: "Project deleted successfully!" };
+  if (!rejectproject) return { error: "Fail to reject project !" };
+  return { success: "Project rejected successfully!" };
 }
 
 export async function GetaNumberOfProjects() {
@@ -335,6 +372,8 @@ async function getEmbeddingsForProject(
   objective: string | undefined,
   challenges: string | undefined,
   results: string | undefined,
+  technologies: string | undefined,
+  methodology: string | undefined,
 ) {
   return getEmbeddings(
     title +
@@ -345,6 +384,9 @@ async function getEmbeddingsForProject(
       "\n\n" +
       challenges +
       "\n\n" +
-      results ?? "",
+      results ??
+      +"\n\n" + technologies! ??
+      +"\n\n" + methodology! ??
+      "",
   );
 }

@@ -71,10 +71,7 @@ const Page = async ({ searchParams }: PageProps) => {
     });
 
     const vectorProjects = res.matches.filter((existingProject) => {
-      if (
-        projects.some((project) => project.id === existingProject.id) ||
-        existingProject.score! < 0.9
-      ) {
+      if (projects.some((project) => project.id === existingProject.id)) {
         return false;
       } else {
         return true;

@@ -52,7 +52,7 @@ function DepartmentDialog({ trigger }: DepartmentDialogProps) {
 
   const user = useCurrentUser();
   const { data: dbUser, isFetching } = useQuery({
-    queryKey: ["users"],
+    queryKey: ["userSession", "depart"],
     queryFn: async () => await getUserById(user?.id!),
   });
 
@@ -82,7 +82,7 @@ function DepartmentDialog({ trigger }: DepartmentDialogProps) {
       toast.success(`Department ${data.name} created successfully 👍`);
 
       await queryClient.invalidateQueries({
-        queryKey: ["colleges"],
+        queryKey: ["department"],
       });
 
       setOpen((prev) => !prev);
