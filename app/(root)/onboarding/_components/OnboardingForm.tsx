@@ -93,7 +93,6 @@ const OnboardingForm = ({ user }: Props) => {
         update();
         toast.success(data.success);
         router.push("/dashboard");
-        router.refresh();
       }
 
       // After creating a transaction, we need to invalidate the overview query which will fetch data in the home page

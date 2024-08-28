@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import NextAuth from "next-auth";
+import authConfig from "./lib/config/auth.config";
 import {
   apiAuthPrefix,
   authRoutes,
@@ -6,15 +7,11 @@ import {
   publicRoutes,
 } from "./lib/config/routes";
 
-// This is a mock-up of authentication check. Replace this with your actual authentication logic.
-async function isAuthenticated(req: NextRequest) {
-  // Implement your auth logic, maybe call a backend API or check cookies
-  return !!req.cookies.get("auth-token");
-}
+const { auth } = NextAuth(authConfig);
 
-export async function middleware(req: NextRequest) {
+export default auth((req) => {
   const { nextUrl } = req;
-  const isLoggedIn = await isAuthenticated(req);
+  const isLoggedIn = !!req.auth;
 
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
   const isPublicRoute =
@@ -23,14 +20,14 @@ export async function middleware(req: NextRequest) {
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
 
   if (isApiAuthRoute) {
-    return NextResponse.next();
+    return;
   }
 
   if (isAuthRoute) {
     if (isLoggedIn) {
-      return NextResponse.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
+      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
     }
-    return NextResponse.next();
+    return;
   }
 
   if (!isLoggedIn && !isPublicRoute) {
@@ -41,15 +38,15 @@ export async function middleware(req: NextRequest) {
 
     const encodedCallbackUrl = encodeURIComponent(callbackUrl);
 
-    return NextResponse.redirect(
+    return Response.redirect(
       new URL(`/login?callbackUrl=${encodedCallbackUrl}`, nextUrl),
     );
   }
 
-  return NextResponse.next();
-}
+  return;
+});
 
-// Optional: Define the paths that should trigger this middleware
+// Optionally, don't invoke Middleware on some paths
 export const config = {
   matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
 };

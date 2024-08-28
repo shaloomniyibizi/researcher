@@ -4,7 +4,6 @@ import "./globals.css";
 import { auth } from "@/auth";
 import TanstackProvider from "@/components/layout/TanstackProvider";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
-import { fontSans } from "@/lib/fonts";
 import { cn } from "@/lib/utils";
 import { SessionProvider } from "next-auth/react";
 import "react-quill/dist/quill.snow.css";
@@ -19,10 +18,7 @@ export default async function RootLayout({
     <SessionProvider session={session}>
       <html lang="en" suppressHydrationWarning>
         <body
-          className={cn(
-            "min-h-screen bg-background font-sans antialiased",
-            fontSans.variable,
-          )}
+          className={cn("min-h-screen bg-background font-sans antialiased")}
         >
           <TanstackProvider>
             <ThemeProvider

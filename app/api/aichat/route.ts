@@ -4,7 +4,6 @@ import openai, { getEmbeddings } from "@/lib/openai";
 import { currentUser } from "@/lib/userAuth";
 import { OpenAIStream, StreamingTextResponse } from "ai";
 import { ChatCompletionMessage } from "openai/resources/index.mjs";
-// import { ChatCompletionMessage } from "openai/resources/index.mjs";
 
 export async function POST(req: Request) {
   try {

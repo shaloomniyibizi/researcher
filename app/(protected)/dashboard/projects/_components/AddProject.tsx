@@ -25,7 +25,7 @@ import { cn, isBase64Image, isBase64PDF } from "@/lib/utils";
 import { ProjectSchema, ProjectSchemaType } from "@/lib/validations/project";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ImageIcon, Text } from "lucide-react";
+import { ImageIcon, Text, ThumbsUp } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, useState } from "react";
@@ -158,16 +158,16 @@ const AddProject = () => {
   };
 
   return (
-    <main className="grid items-start gap-4 overflow-x-clip px-4 py-8 sm:px-6 md:gap-8 md:pt-0">
+    <main className="flex flex-col items-start gap-4 overflow-x-clip py-8 md:pt-0">
       <div className="sticky top-14 hidden md:block">
         <Steps STEPS={STEPS} />
       </div>
-      <div className="mx-auto flex h-full min-h-[calc(100vh-13rem)] min-w-full max-w-5xl flex-col items-center justify-center">
+      <div className="mx-auto min-h-[calc(100vh-13rem)] w-full max-w-5xl">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
-            <div className="grid gap-8 md:grid-cols-3">
+            <div className={cn("", step === 1 && "grid gap-8 md:grid-cols-3")}>
               {step === 1 && (
-                <Card className="w-full">
+                <Card className="max-w-3xl">
                   <CardHeader>
                     <CardTitle>Product Images</CardTitle>
                     <CardDescription>
@@ -209,144 +209,141 @@ const AddProject = () => {
                   </CardContent>
                 </Card>
               )}
-              <div
-                className={cn(
-                  "grid lg:gap-8",
-                  step === 1 ? "md:col-span-2" : "w-full md:col-span-3",
-                )}
-              >
-                <Card className="w-full max-w-3xl">
-                  <CardHeader>
-                    <CardTitle>Product Details</CardTitle>
-                    <CardDescription>
-                      Add more details to your project such as title and
-                      describtions
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="grid gap-4 sm:gap-8">
-                    {step === 1 && (
-                      <>
-                        {(STEPS[0].isCurrent = true)}
-                        <CustomFormField
-                          fieldType={FormFieldType.INPUT}
-                          control={form.control}
-                          name="title"
-                          placeholder="Project title"
-                          label="Title"
-                        />
-                        <CustomFormField
-                          fieldType={FormFieldType.TEXTAREA}
-                          control={form.control}
-                          name="description"
-                          description="provide project description"
-                          label="Description"
-                        />
-                      </>
-                    )}
-                    {step === 2 && (
-                      <>
-                        {(STEPS[0].isCompleted = true)}
-                        {(STEPS[1].isCurrent = true)}
-                        <CustomFormField
-                          fieldType={FormFieldType.TEXTAREA}
-                          control={form.control}
-                          name="objective"
-                          label="Project Objective"
-                        />
-                        <CustomFormField
-                          fieldType={FormFieldType.INPUT}
-                          control={form.control}
-                          name="technologies"
-                          placeholder="Provide tech used to develop this project with comma separetor"
-                          label="Technology used"
-                        />
-                        <CustomFormField
-                          fieldType={FormFieldType.TEXTAREA}
-                          control={form.control}
-                          name="methodology"
-                          label="Methodology"
-                        />
-                      </>
-                    )}
-                    {step === 3 && (
-                      <>
-                        {(STEPS[0].isCompleted = true)}
-                        {(STEPS[1].isCompleted = true)}
-                        {(STEPS[2].isCurrent = true)}
-                        <div className="grid gap-6">
-                          <div className="grid gap-3">
-                            <CustomFormField
-                              fieldType={FormFieldType.TEXTAREA}
-                              control={form.control}
-                              name="challenges"
-                              label="Challenge / Problem statement"
-                            />
-                          </div>
-                          <div className="grid gap-3">
-                            <CustomFormField
-                              fieldType={FormFieldType.TEXTAREA}
-                              control={form.control}
-                              name="results"
-                              label="Result / Possible solution"
-                            />
-                          </div>
+              <Card className={cn(step === 1 && "md:col-span-2 lg:gap-8")}>
+                <CardHeader>
+                  <CardTitle>Product Details</CardTitle>
+                  <CardDescription>
+                    Add more details to your project such as title and
+                    describtions
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="">
+                  {step === 1 && (
+                    <>
+                      {(STEPS[0].isCurrent = true)}
+                      <CustomFormField
+                        fieldType={FormFieldType.INPUT}
+                        control={form.control}
+                        name="title"
+                        placeholder="Project title"
+                        label="Title"
+                      />
+                      <CustomFormField
+                        fieldType={FormFieldType.TEXTAREA}
+                        control={form.control}
+                        name="description"
+                        description="provide project abstract"
+                        label="Abstract"
+                      />
+                    </>
+                  )}
+                  {step === 2 && (
+                    <>
+                      {(STEPS[0].isCompleted = true)}
+                      {(STEPS[1].isCurrent = true)}
+                      <CustomFormField
+                        fieldType={FormFieldType.TEXTAREA}
+                        control={form.control}
+                        name="objective"
+                        label="Project Objective"
+                      />
+                      <CustomFormField
+                        fieldType={FormFieldType.INPUT}
+                        control={form.control}
+                        name="technologies"
+                        placeholder="Provide tech used "
+                        label="Technology and/or Language used"
+                        description="Use comma separetor"
+                      />
+                      <CustomFormField
+                        fieldType={FormFieldType.TEXTAREA}
+                        control={form.control}
+                        name="methodology"
+                        label="Methodology"
+                      />
+                    </>
+                  )}
+                  {step === 3 && (
+                    <>
+                      {(STEPS[0].isCompleted = true)}
+                      {(STEPS[1].isCompleted = true)}
+                      {(STEPS[2].isCurrent = true)}
+                      <div className="grid gap-6">
+                        <div className="grid gap-3">
+                          <CustomFormField
+                            fieldType={FormFieldType.TEXTAREA}
+                            control={form.control}
+                            name="challenges"
+                            label="Problem statement"
+                          />
                         </div>
-                      </>
-                    )}
-                    {step === 4 && (
-                      <>
-                        {(STEPS[0].isCompleted = true)}
-                        {(STEPS[1].isCompleted = true)}
-                        {(STEPS[2].isCurrent = true)}
-                        <div className="grid gap-6">
-                          <div className="grid gap-3">
-                            <FormField
-                              control={form.control}
-                              name="pdf"
-                              render={({ field }) => (
-                                <FormItem className="grid min-w-64 gap-2">
-                                  <FormLabel className="flex h-48 w-full flex-1 flex-col items-center justify-center rounded-md border border-dashed p-2 text-center">
-                                    {field.value ? (
-                                      "Success PDF added \n Click to change"
-                                    ) : (
-                                      <>
-                                        <span>
-                                          Click to Project pdf document
-                                        </span>{" "}
-                                        <Text />
-                                      </>
-                                    )}
-                                  </FormLabel>
-                                  <FormControl className="text-base-semibold flex-1 text-gray-200">
-                                    <Input
-                                      type="file"
-                                      accept="application/pdf"
-                                      placeholder="Edit profile image"
-                                      className="sr-only"
-                                      onChange={(e) =>
-                                        handlePDF(e, field.onChange)
-                                      }
-                                    />
-                                  </FormControl>
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                          <div className="grid gap-3">
-                            <CustomFormField
-                              fieldType={FormFieldType.INPUT}
-                              control={form.control}
-                              name="codeLink"
-                              placeholder="Code link"
-                              label="Link to project source code"
-                            />
-                          </div>
+                        <div className="grid gap-3">
+                          <CustomFormField
+                            fieldType={FormFieldType.TEXTAREA}
+                            control={form.control}
+                            name="results"
+                            label="Possible solution"
+                          />
                         </div>
-                      </>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
+                      </div>
+                    </>
+                  )}
+                  {step === 4 && (
+                    <>
+                      {(STEPS[0].isCompleted = true)}
+                      {(STEPS[1].isCompleted = true)}
+                      {(STEPS[2].isCurrent = true)}
+                      <div className="grid gap-6">
+                        <div className="grid gap-3">
+                          <FormField
+                            control={form.control}
+                            name="pdf"
+                            render={({ field }) => (
+                              <FormItem className="grid min-w-64 gap-2">
+                                <FormLabel className="flex h-48 w-full flex-1 flex-col items-center justify-center rounded-md border border-dashed p-2 text-center">
+                                  {field.value ? (
+                                    <>
+                                      <p className="">
+                                        Success PDF added <ThumbsUp />
+                                      </p>{" "}
+                                      <p className="">Click to change</p>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <span>Click to Project pdf document</span>{" "}
+                                      <Text />
+                                    </>
+                                  )}
+                                </FormLabel>
+                                <FormControl className="text-base-semibold flex-1 text-gray-200">
+                                  <Input
+                                    type="file"
+                                    accept="application/pdf"
+                                    placeholder="Edit profile image"
+                                    className="sr-only"
+                                    onChange={(e) =>
+                                      handlePDF(e, field.onChange)
+                                    }
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <div className="grid gap-3">
+                          <CustomFormField
+                            fieldType={FormFieldType.INPUT}
+                            control={form.control}
+                            name="codeLink"
+                            placeholder="Code link"
+                            label="Link to project source code"
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
             </div>
             <div className="mt-2 flex justify-between">
               {step > 1 ? (

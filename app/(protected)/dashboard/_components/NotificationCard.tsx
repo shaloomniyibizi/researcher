@@ -59,8 +59,8 @@ const NotificationCard = ({ user, notification, project }: Props) => {
                       notify.projectId === pro.id &&
                       user.id === pro.userId && (
                         <Link
+                          href={`/dashboard/notification/${notify.id}`}
                           key={notify.id}
-                          href={"#"}
                           className="flex transform gap-4 transition duration-500 hover:scale-95"
                         >
                           <Avatar>
