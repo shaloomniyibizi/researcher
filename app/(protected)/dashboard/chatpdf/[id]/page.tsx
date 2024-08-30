@@ -1,10 +1,14 @@
-import db from "@/lib/db";
 import { currentUser } from "@/lib/userAuth";
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from "@tanstack/react-query";
 import { redirect } from "next/navigation";
-import { getUserById } from "../../users/_actions/user.actions";
 import ChatComponent from "../_components/ChatComponent";
 import ChatSideBar from "../_components/ChatSideBar";
 import PDFViewer from "../_components/PDFViewer";
+import { getManyChatsByUserId } from "../actions/chats.actions";
 
 type Props = {
   params: {
@@ -13,27 +17,16 @@ type Props = {
 };
 
 const ChatPage = async ({ params: { id } }: Props) => {
+  const queryClient = new QueryClient();
   const user = await currentUser();
   if (!user) {
     return redirect("/login");
   }
-  const dbUser = await getUserById(user.id!);
-  if (!dbUser?.onboarded) {
-    return redirect("/onboarding");
-  }
-  const _chats = await db.chats.findMany({
-    where: {
-      userId: user.id!,
-    },
-  });
-  if (!_chats) {
-    return redirect("/dashboard/chatpdf");
-  }
+  const userId = user.id;
 
-  const currentChat = await db.chats.findFirst({
-    where: {
-      id,
-    },
+  await queryClient.prefetchQuery({
+    queryKey: ["pdfchats", id],
+    queryFn: async () => await getManyChatsByUserId(userId!),
   });
 
   return (
@@ -41,11 +34,13 @@ const ChatPage = async ({ params: { id } }: Props) => {
       <div className="flex w-full">
         {/* chat sidebar */}
         <div className="max-w-xs flex-[1]">
-          <ChatSideBar chats={_chats} id={id} />
+          <HydrationBoundary state={dehydrate(queryClient)}>
+            <ChatSideBar userId={userId!} id={id} />
+          </HydrationBoundary>
         </div>
         {/* pdf viewer */}
         <div className="flex-[5] p-4">
-          <PDFViewer pdf_url={currentChat?.pdfUrl || ""} />
+          <PDFViewer id={id} />
         </div>
         {/* chat component */}
         <div className="flex-[3] border-l-2 border-l-border">

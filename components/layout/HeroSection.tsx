@@ -1,48 +1,47 @@
-import Image from 'next/image';
-import React from 'react';
 import { AnimatedTooltip } from '@/components/ui/animated-tooltip';
-import Link from 'next/link';
 import { BackgroundBeams } from '@/components/ui/background-beams';
 import { InfiniteMovingCards } from '@/components/ui/infinity-moving-card';
-import { Card, CardContent } from '../ui/card';
 import { Star } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Card, CardContent } from '../ui/card';
 
 const people = [
   {
     id: 1,
     name: 'John Doe',
     designation: 'Software Engineer',
-    image: '/PassPort.jpg',
+    image: '/images/PassPort.jpg',
   },
   {
     id: 2,
     name: 'Robert Johnson',
     designation: 'Product Manager',
-    image: '/PassPort.jpg',
+    image: '/images/PassPort.jpg',
   },
   {
     id: 3,
     name: 'Jane Smith',
     designation: 'Data Scientist',
-    image: '/PassPort.jpg',
+    image: '/images/PassPort.jpg',
   },
   {
     id: 4,
     name: 'Emily Davis',
     designation: 'UX Designer',
-    image: '/PassPort.jpg',
+    image: '/images/PassPort.jpg',
   },
   {
     id: 5,
     name: 'Tyler Durden',
     designation: 'Soap Developer',
-    image: '/PassPort.jpg',
+    image: '/images/PassPort.jpg',
   },
   {
     id: 6,
     name: 'Dora',
     designation: 'The Explorer',
-    image: '/PassPort.jpg',
+    image: '/images/PassPort.jpg',
   },
 ];
 const testimonials = [

@@ -1,17 +1,23 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { Chats } from "@prisma/client";
+import { useQuery } from "@tanstack/react-query";
 import { MessageCircle, PlusCircle } from "lucide-react";
 import Link from "next/link";
+import { getManyChatsByUserId } from "../actions/chats.actions";
 
 type Props = {
-  chats: Chats[];
   id: string;
+  userId: string;
 };
 
-const ChatSideBar = ({ chats, id }: Props) => {
+const ChatSideBar = ({ userId, id }: Props) => {
+  const { data: chats, isLoading: isMessageLoading } = useQuery({
+    queryKey: ["pdfchats", id],
+    queryFn: async () => await getManyChatsByUserId(userId!),
+  });
   return (
     <div className="soff h-full w-full bg-card p-4 text-card-foreground">
       <Link href="/dashboard/chatpdf">
@@ -22,7 +28,7 @@ const ChatSideBar = ({ chats, id }: Props) => {
       </Link>
 
       <ScrollArea className="mt-4 flex h-full flex-col gap-2 pb-20">
-        {chats.map((chat) => (
+        {chats?.map((chat) => (
           <Link key={chat.id} href={`/dashboard/chatpdf/${chat.id}`}>
             <div
               className={cn("flex items-center rounded-sm p-3", {

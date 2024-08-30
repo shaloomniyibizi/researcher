@@ -3,18 +3,13 @@ import { currentUser } from "@/lib/userAuth";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getUserById } from "../users/_actions/user.actions";
 import FileUpload from "./_components/FileUpload";
 import { getChatsByUserId } from "./actions/chats.actions";
 
 async function ChatpdfPage() {
   const user = await currentUser();
   if (!user) redirect("/login");
-  const dbUser = await getUserById(user.id!);
 
-  if (!dbUser?.onboarded) {
-    redirect("/onboarding");
-  }
   const chats = await getChatsByUserId(user?.id!);
 
   return (

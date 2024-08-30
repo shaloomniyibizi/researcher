@@ -12,7 +12,7 @@ type Props = { id: string };
 
 const ChatComponent = ({ id }: Props) => {
   const { data, isLoading: isMessageLoading } = useQuery({
-    queryKey: ["chat", id],
+    queryKey: ["chatsMessages", id],
     queryFn: async () => {
       const response = await axios.post<Message[]>("/api/get-messages", {
         id,

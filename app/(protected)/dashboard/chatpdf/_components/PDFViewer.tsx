@@ -1,12 +1,18 @@
-import React from "react";
+"use client";
+import { useQuery } from "@tanstack/react-query";
+import { getChatsById } from "../actions/chats.actions";
 
-type Props = { pdf_url: string };
+type Props = { id: string };
 
-const PDFViewer = ({ pdf_url }: Props) => {
+const PDFViewer = ({ id }: Props) => {
+  const { data: chat, isLoading: isMessageLoading } = useQuery({
+    queryKey: ["chatDocument", id],
+    queryFn: async () => await getChatsById(id),
+  });
   return (
     <iframe
-      src={`https://docs.google.com/gview?url=${pdf_url}&embedded=true`}
-      className="w-full h-full"
+      src={`https://docs.google.com/gview?url=${chat?.pdfUrl}&embedded=true`}
+      className="h-full w-full"
     ></iframe>
   );
 };

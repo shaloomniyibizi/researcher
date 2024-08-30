@@ -1,8 +1,8 @@
 "use client";
 
 import { getColleges } from "@/app/(protected)/dashboard/college/_actions/collage.actions";
-import { getDepartments } from "@/app/(protected)/dashboard/college/_actions/department.actions";
-import { getFields } from "@/app/(protected)/dashboard/college/_actions/field.actions";
+import { getDepartmentsByCollegeId } from "@/app/(protected)/dashboard/college/_actions/department.actions";
+import { getFieldsDepartmentId } from "@/app/(protected)/dashboard/college/_actions/field.actions";
 import CustomFormField, {
   FormFieldType,
 } from "@/components/shared/CustomFormField";
@@ -24,7 +24,15 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { SelectItem } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { DBExtendedUser } from "@/lib/types/db";
 import { useUploadThing } from "@/lib/uploadthing";
@@ -49,6 +57,8 @@ interface Props {
 }
 
 const OnboardingForm = ({ user }: Props) => {
+  const [selectedCollege, setSelectedCollege] = useState<string>("");
+  const [selectedDepartment, setSelectedDepartment] = useState<string>("");
   const router = useRouter();
   const { startUpload } = useUploadThing("imageUploader");
 
@@ -60,12 +70,14 @@ const OnboardingForm = ({ user }: Props) => {
     queryFn: async () => await getColleges(),
   });
   const { data: departments } = useQuery({
-    queryKey: ["departments"],
-    queryFn: async () => await getDepartments(),
+    queryKey: ["departments", selectedCollege],
+    queryFn: async () => await getDepartmentsByCollegeId(selectedCollege),
+    enabled: !!selectedCollege,
   });
   const { data: fields } = useQuery({
-    queryKey: ["fields"],
-    queryFn: async () => await getFields(),
+    queryKey: ["fields", selectedDepartment],
+    queryFn: async () => await getFieldsDepartmentId(selectedDepartment),
+    enabled: !!selectedDepartment,
   });
 
   const queryClient = useQueryClient();
@@ -147,6 +159,14 @@ const OnboardingForm = ({ user }: Props) => {
       fileReader.readAsDataURL(file);
     }
   };
+  const handleCollegeChange = (value: string) => {
+    setSelectedCollege(value);
+    form.setValue("collegeId", value);
+  };
+  const handleDepartmentChange = (value: string) => {
+    setSelectedDepartment(value);
+    form.setValue("departmentId", value);
+  };
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="min-w-lg mx-auto">
@@ -208,45 +228,107 @@ const OnboardingForm = ({ user }: Props) => {
               label="Email address"
               disabled
             />
-            <CustomFormField
-              fieldType={FormFieldType.SELECT}
+            <FormField
               control={form.control}
               name="collegeId"
-              placeholder="Select College"
-              label="College"
-            >
-              {colleges?.map((college, i) => (
-                <SelectItem key={college.name + i} value={college.id}>
-                  <p>{college.name}</p>
-                </SelectItem>
-              ))}
-            </CustomFormField>
-            <CustomFormField
-              fieldType={FormFieldType.SELECT}
+              render={({ field }) => (
+                <FormItem className="w-full flex-1">
+                  <FormLabel>College</FormLabel>
+                  <FormControl>
+                    <Select
+                      onValueChange={handleCollegeChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select your college" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Colleges</SelectLabel>
+                          {colleges?.map((college, i) => (
+                            <SelectItem
+                              key={college.name + i}
+                              value={college.id}
+                            >
+                              <p>{college.name}</p>
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
               control={form.control}
               name="departmentId"
-              placeholder="Select Department"
-              label="Department"
-            >
-              {departments?.map((department, i) => (
-                <SelectItem key={department.name + i} value={department.id}>
-                  <p>{department.name}</p>
-                </SelectItem>
-              ))}
-            </CustomFormField>
-            <CustomFormField
-              fieldType={FormFieldType.SELECT}
+              render={({ field }) => (
+                <FormItem className="w-full flex-1">
+                  <FormLabel>Department</FormLabel>
+                  <FormControl>
+                    <Select
+                      onValueChange={handleDepartmentChange}
+                      defaultValue={field.value}
+                      disabled={!selectedCollege}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select your Department" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Department</SelectLabel>
+                          {departments?.map((department, i) => (
+                            <SelectItem
+                              key={department.name + i}
+                              value={department.id}
+                            >
+                              <p>{department.name}</p>
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
               control={form.control}
               name="fieldId"
-              placeholder="Select Field"
-              label="Field"
-            >
-              {fields?.map((field, i) => (
-                <SelectItem key={field.name + i} value={field.id}>
-                  <p>{field.name}</p>
-                </SelectItem>
-              ))}
-            </CustomFormField>
+              render={({ field }) => (
+                <FormItem className="w-full flex-1">
+                  <FormLabel>Program</FormLabel>
+                  <FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      disabled={!selectedDepartment}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select your program" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Program</SelectLabel>
+                          {fields?.map((program, i) => (
+                            <SelectItem
+                              key={program.name + i}
+                              value={program.id}
+                            >
+                              <p>{program.name}</p>
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
