@@ -338,29 +338,75 @@ export async function RejectProject(id: string) {
 }
 
 export async function GetaNumberOfProjects() {
-  const count = await db.project.count();
+  const user = await currentUser();
+
+  if (!user) redirect("/login");
+
+  const dbUser = await db.user.findUnique({
+    where: { id: user.id },
+  });
+  const count = await db.project.count({
+    where: {
+      user: {
+        collegeId: dbUser?.collegeId,
+      },
+    },
+  });
   return count;
 }
 export async function GetaNumberOfAcceptedProjects() {
+  const user = await currentUser();
+  if (!user) redirect("/login");
+
+  const dbUser = await db.user.findUnique({
+    where: { id: user.id },
+  });
   const count = await db.project.count({
     where: {
-      status: "accepted",
+      AND: {
+        status: "accepted",
+        user: {
+          collegeId: dbUser?.collegeId,
+        },
+      },
     },
   });
   return count;
 }
 export async function GetaNumberOfRejectedProjects() {
+  const user = await currentUser();
+  if (!user) redirect("/login");
+
+  const dbUser = await db.user.findUnique({
+    where: { id: user.id },
+  });
   const count = await db.project.count({
     where: {
-      status: "rejected",
+      AND: {
+        status: "rejected",
+        user: {
+          collegeId: dbUser?.collegeId,
+        },
+      },
     },
   });
   return count;
 }
 export async function GetaNumberOfPendingProjects() {
+  const user = await currentUser();
+  if (!user) redirect("/login");
+
+  const dbUser = await db.user.findUnique({
+    where: { id: user.id },
+  });
   const count = await db.project.count({
     where: {
-      status: "pedding",
+      AND: {
+        status: "accepted",
+        user: {
+          collegeId: dbUser?.collegeId,
+        },
+      },
     },
   });
   return count;

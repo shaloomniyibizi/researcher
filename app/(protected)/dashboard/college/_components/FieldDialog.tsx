@@ -29,13 +29,15 @@ import CustomFormField, {
 } from "@/components/shared/CustomFormField";
 import { SelectItem } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { fieldSchema, fieldSchemaType } from "@/lib/validations/college";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Field } from "@prisma/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, PlusSquare } from "lucide-react";
 import { toast } from "react-toastify";
-import { getDepartments } from "../_actions/department.actions";
+import { getUserById } from "../../users/_actions/user.actions";
+import { getDepartmentsByCollegeId } from "../_actions/department.actions";
 import { CreateField } from "../_actions/field.actions";
 
 interface FieldDialogProps {
@@ -45,6 +47,8 @@ interface FieldDialogProps {
 function FieldDialog({ trigger }: FieldDialogProps) {
   const [open, setOpen] = React.useState(false);
 
+  const user = useCurrentUser();
+
   const form = useForm<fieldSchemaType>({
     resolver: zodResolver(fieldSchema),
     defaultValues: {
@@ -53,9 +57,14 @@ function FieldDialog({ trigger }: FieldDialogProps) {
     },
   });
 
+  const { data: dbUser, isFetching } = useQuery({
+    queryKey: ["userSession", "depart"],
+    queryFn: async () => await getUserById(user?.id!),
+  });
+
   const { data: departments } = useQuery({
     queryKey: ["departments"],
-    queryFn: async () => await getDepartments(),
+    queryFn: async () => await getDepartmentsByCollegeId(dbUser?.collegeId!),
   });
 
   const queryClient = useQueryClient();

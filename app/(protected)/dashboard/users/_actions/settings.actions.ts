@@ -32,7 +32,10 @@ export const settings = async (values: SettingsSchemaType) => {
   const user = await currentUser();
 
   if (!user) {
-    return { error: "Unauthorized" };
+    return { error: "Unauthorized Action" };
+  }
+  if (user.role === "STUDENT") {
+    return { error: "you can't perform this Action as student" };
   }
 
   const dbUser = await getUserByEmail(email!);

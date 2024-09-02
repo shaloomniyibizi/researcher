@@ -38,7 +38,7 @@ function AcceptProjectDialog({
       });
     },
     onError: (error) => {
-      toast.success(error.message);
+      toast.error(error.message);
     },
   });
   return (
