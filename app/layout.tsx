@@ -1,4 +1,3 @@
-import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
 
 import { auth } from "@/auth";
@@ -8,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { SessionProvider } from "next-auth/react";
 import "react-quill/dist/quill.snow.css";
 import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 export default async function RootLayout({
   children,
 }: Readonly<{

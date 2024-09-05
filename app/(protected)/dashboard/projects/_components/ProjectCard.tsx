@@ -31,7 +31,7 @@ const ProjectCard = () => {
         projects?.map(
           (project) =>
             project.status === "accepted" && (
-              <Card className="w-full overflow-hidden">
+              <Card key={project.id} className="w-full overflow-hidden">
                 <Link
                   className="flex h-full flex-col"
                   href={`/dashboard/projects/${project.id}`}
