@@ -272,7 +272,7 @@ export type ProjectData = (typeof projects)[number];
 export const STEPS = [
   {
     name: "Step 1: Project descriptions",
-    description: "upload project image, title and description",
+    description: "upload project image, title and Abstract",
     isCompleted: false,
     isCurrent: false,
     imgPath: <Bot />,
