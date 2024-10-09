@@ -37,8 +37,9 @@ export async function POST(req: Request) {
 
     const systemMessage: ChatCompletionMessage = {
       content:
-        "You are an intelligent project-store app. you answer the user's question based on their existing projects" +
-        "the existing projects:\n" +
+        "You are an intelligent to answer user's question. the answer is from the bellow existing projects" +
+        "If no answer found in bellow existing project reply that you do not know the answer and you can answer question related to existing project" +
+        "the existing projects are:\n" +
         relativeProjects
           .map(
             (project) =>

@@ -42,7 +42,7 @@ interface Props {
   user: User;
 }
 const ProfileSettingsForm = ({ user }: Props) => {
-  const { update } = useSession(); 
+  const { update } = useSession();
 
   const router = useRouter();
   const { startUpload } = useUploadThing("imageUploader");
@@ -76,8 +76,6 @@ const ProfileSettingsForm = ({ user }: Props) => {
         router.refresh();
         router.back();
       }
-
-      // After creating a transaction, we need to invalidate the overview query which will fetch data in the home page
       queryClient.invalidateQueries({
         queryKey: ["dashboard", "usersProfile"],
       });
